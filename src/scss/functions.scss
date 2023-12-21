@@ -1,0 +1,32 @@
+@function rem($px){
+    $result: math.div($px, 16) + rem;
+    @return $result;
+}
+@function perc($quotient, $divisor){
+    $result: math.div($quotient, $divisor) * 100%;
+    @return $result;
+}
+@function em($quotient, $divisor){
+    $result: math.div($quotient, $divisor) + em;
+    @return $result;
+}
+
+@mixin adaptiv-value($property, $startSize, $minSize, $type) {
+    $addSize: $startSize - $minSize;
+    @if $type==1 {
+        #{$property}: math.div($startSize, 16) + rem;
+        //если меньше контейнера
+        @media (max-width: #{$maxWidthContainer + px}) {
+            #{$property}: calc(#{$minSize + px} + #{$addSize} * ((100vw - 320px) / #{$maxWidthContainer - 320}));
+        }
+    } @else if $type==2 {
+        //если больше контейнера
+        #{$property}: $startSize / 16 + rem;
+        @media (min-width: #{$maxWidthContainer + px}) {
+            #{$property}: calc(#{$minSize + px} + #{$addSize} * ((100vw - 320px) / #{$maxWidth - 320}));
+        }
+    } @else {
+        //всегда
+        #{$property}: calc(#{$minSize + px} + #{$addSize} * ((100vw - 320px) / #{$maxWidthContainer - 320}));
+    }
+}
