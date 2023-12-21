@@ -1,34 +1,9 @@
 "use strict";
 
-//?Импорт кастомного открывания картинок (снипет doi)
-//import customOpenImage from './modules/customOpenImage.js';
-//?Импор Свайпера (снипет swp)
-//import Swiper from 'swiper';
-//import { Navigation, Pagination } from 'swiper/modules';
-
-
-//?Основные скрипты (делегирование, шапка)
-//import { delegationClick } from './modules/script.js';
-//?Для открытия, закрытия бургера обязательно добавить эту ф-ию (только импортировать, запускать не надо)
-//import { closeMenu } from './modules/script.js';
-
-
-//?Функция определения мобильного устройства
-//import { isMobile } from "./modules/functions";
-//?Импортирование плавного скролла
-//import "./modules/smoothScroll.js"
-//?Галерея FancyBox
-//import { Fancybox } from "@fancyapps/ui";
-//import "@fancyapps/ui/dist/fancybox/fancybox.css";
-//Fancybox.bind("[data-gallery]", {});
-//<a href="img/3.jfif" data-fancybox="gallery" data-caption="Природа" class="block__item"><img src="img/3.jfif" alt="Природа"></a>
-
-//?Динамический адаптив (  useDynamicAdapt()  )
-//import { useDynamicAdapt } from './modules/dynamic.js'
-
-
 window.addEventListener("load", windowLoad);
 function windowLoad() {
+
+    const game = document.querySelector("#game");
 
     //Главный персонаж
     const hero = document.querySelector("#hero");
@@ -38,14 +13,26 @@ function windowLoad() {
     //Позиции для главного персонажа
     let leftPosMainHero = 0;
     let translateMainHero = 5;
+    let topMainHero = 0;
 
     //Стоит ли кот
     let isStandMainHero = false;
     let isHit = false;
+    let fall = false;
     //В какую сторону повернут кот
     let direction = "right";
     //переменная для анимации
     let animation;
+
+    let heroX = Math.floor(Number.parseInt(getComputedStyle(hero).left) / 32);
+    let heroY = Math.floor(Number.parseInt(getComputedStyle(hero).bottom) / 32);
+    let heroYDefault = 80;
+
+    let isFalling = false;
+
+
+    //для карты переменные
+    let tileArray = [];
 
     //Обработчик нажатия на клавишу
     document.addEventListener("keydown", (e) => {
@@ -105,6 +92,9 @@ function windowLoad() {
             }
 
         }
+        if (keyPressed === "KeyW" || keyPressed === "Space") {
+            jumpHandler();
+        }
     });
     //Обработчик опускания клавиши
     document.addEventListener("keyup", (e) => {
@@ -117,13 +107,13 @@ function windowLoad() {
                 standHanlder();
             }, 100);
         }
-      
+
     });
 
     //ФУнкция передвижения главного героя вправо
     function rightHandler() {
         leftPosMainHero <= -192 ? leftPosMainHero = 0 : leftPosMainHero -= 32;
-        translateMainHero >= 12 ? null : translateMainHero += 1;
+        translateMainHero >= 90 ? null : translateMainHero += 1;
 
         hero.style.left = translateMainHero + "%";
 
@@ -132,6 +122,11 @@ function windowLoad() {
         heroImg.style.left = leftPosMainHero + "px";
 
         direction = "right";
+
+        checkFalling();
+        if (isFalling)
+            fall = true;
+        else fall = false;
     }
     //передвижение влево
     function leftHandler() {
@@ -145,6 +140,11 @@ function windowLoad() {
         heroImg.style.left = leftPosMainHero + "px";
 
         direction = "left";
+
+        checkFalling();
+        if (isFalling)
+            fall = true;
+        else fall = false;
     }
     //анимация стоянки
     function standHanlder() {
@@ -196,13 +196,88 @@ function windowLoad() {
 
 
     }
+    //Прыжок
+    function jumpHandler() {
+        translateMainHero += 5;
+        topMainHero += 386;
 
+        if (direction === "right") {
+            hero.style.left = translateMainHero + "%";
+        } else {
+            hero.style.left = "-" + translateMainHero + "%";
+        }
+
+        hero.style.bottom = topMainHero + "px";
+
+        if (isFalling)
+            fall = true;
+        else fall = false;
+    }
+
+    function createTile(x, y = 1) {
+        const tile = document.createElement("img");
+        tile.src = "img/tiles/main.svg";
+        tile.style.cssText = `
+            position: absolute;
+            left: ${x * 32}px;
+            bottom: ${y * 32}px;
+            width: 32px;
+            height: 32px;
+        `;
+        game.appendChild(tile);
+
+        tileArray.push([x, y]);
+    }
+    function addTiles(i) {
+        createTile(i);
+
+        const tileBottom = document.createElement("img");
+        tileBottom.src = "img/tiles/foundation.svg";
+        tileBottom.style.cssText = `
+            position: absolute;
+            left: ${i * 32}px;
+            bottom: 0;
+            width: 32px;
+            height: 32px;
+        `;
+        game.appendChild(tileBottom);
+    }
+    function createTilesPlatform(startX, startY, lenght) {
+        for (let i = 0; i < lenght; i++) {
+            createTile(startX + i, startY);
+        }
+    }
+
+    function updateHeroXY() {
+        heroX = Math.floor(Number.parseInt(getComputedStyle(hero).left) / 32);
+        heroY = Math.floor(Number.parseInt(getComputedStyle(hero).bottom) / 32);
+    }
+
+
+    function checkFalling() {
+        updateHeroXY();
+        isFalling = true;
+        for (let i = 0; i < tileArray.length; i++) {
+            if (tileArray[i][0] === heroX && tileArray[i][1] + 1 === heroY) {
+                isFalling = false;
+                break;
+            }
+        }
+    }
 
     function start() {
+
         animation = setInterval(() => {
             standHanlder();
         }, 100);
         isStandMainHero = true;
+
+        for (let i = 0; i < 100; i++) {
+            if (i > 10 && i < 16) continue;
+            addTiles(i);
+        }
+
+        createTilesPlatform(10, 10, 15);
     }
     start();
 }

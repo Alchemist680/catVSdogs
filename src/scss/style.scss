@@ -142,7 +142,7 @@ body{
     overflow: hidden;
     position: relative;
 
-    //background: url(../img/backgrounds/main.webp);
+    background: url(../img/backgrounds/02.png);
     background-size: cover;
 	background-repeat: no-repeat;
     &__heroes {
@@ -150,8 +150,8 @@ body{
         height: 32px;
         overflow: hidden;
         transform: scale(3);
-        top: 80%;
-        left: 5%;
+        bottom: 80px;
+        left: 32px;
         position: absolute;
         img{
             position: absolute;
