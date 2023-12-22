@@ -146,14 +146,16 @@ body{
     background-size: cover;
 	background-repeat: no-repeat;
     &__heroes {
-        width: 32px;
-        height: 32px;
+        width: 96px;
+        height: 96px;
         overflow: hidden;
-        transform: scale(3);
-        bottom: 80px;
+        transform: scale(1);
+        bottom: 64px;
         left: 32px;
         position: absolute;
         img{
+            width: 672px;
+            height: 288px;
             position: absolute;
             top: 0;
             left: 0;

@@ -15,18 +15,21 @@ function windowLoad() {
     let translateMainHero = 5;
     let topMainHero = 0;
 
+    let heroBlockSize = 96;
+    let MaxBlocksXHero = 7;
+
     //Стоит ли кот
     let isStandMainHero = false;
-    let isHit = false;
+    let hit = false;
+    let jump = false;
     let fall = false;
     //В какую сторону повернут кот
     let direction = "right";
     //переменная для анимации
     let animation;
 
-    let heroX = Math.floor(Number.parseInt(getComputedStyle(hero).left) / 32);
-    let heroY = Math.floor(Number.parseInt(getComputedStyle(hero).bottom) / 32);
-    let heroYDefault = 80;
+    let heroX = Math.ceil(Number.parseInt(getComputedStyle(hero).left) / 32);
+    let heroY = Math.ceil(Number.parseInt(getComputedStyle(hero).bottom) / 32);
 
     let isFalling = false;
 
@@ -81,7 +84,6 @@ function windowLoad() {
                 let counter = 0;
                 animation = setInterval(() => {
                     counter++;
-                    console.log(counter);
                     hitHandler();
                     if (counter == 3) {
                         clearInterval(animation);
@@ -102,17 +104,13 @@ function windowLoad() {
         //animation = null;
         isStandMainHero = true;
 
-        if (!isHit) {
-            animation = setInterval(() => {
-                standHanlder();
-            }, 100);
-        }
+        lifeCycle();
 
     });
 
     //ФУнкция передвижения главного героя вправо
     function rightHandler() {
-        leftPosMainHero <= -192 ? leftPosMainHero = 0 : leftPosMainHero -= 32;
+        leftPosMainHero <= -heroBlockSize * (MaxBlocksXHero - 1) ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
         translateMainHero >= 90 ? null : translateMainHero += 1;
 
         hero.style.left = translateMainHero + "%";
@@ -130,7 +128,7 @@ function windowLoad() {
     }
     //передвижение влево
     function leftHandler() {
-        leftPosMainHero >= 0 ? leftPosMainHero = -192 : leftPosMainHero += 32;
+        leftPosMainHero >= 0 ? leftPosMainHero = -heroBlockSize * (MaxBlocksXHero - 1) : leftPosMainHero += heroBlockSize;
         translateMainHero <= 5 ? null : translateMainHero -= 1;
 
         hero.style.left = translateMainHero + "%";
@@ -149,15 +147,16 @@ function windowLoad() {
     //анимация стоянки
     function standHanlder() {
         if (direction === "right") {
-            leftPosMainHero <= -32 ? leftPosMainHero = 0 : leftPosMainHero -= 32;
+            leftPosMainHero <= -heroBlockSize ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
             heroImg.style.transform = "scale(1, 1)";
         } else {
-            leftPosMainHero >= -160 ? leftPosMainHero = -192 : leftPosMainHero += 32;
+            leftPosMainHero >= -((MaxBlocksXHero - 1) * heroBlockSize - heroBlockSize) ? leftPosMainHero = -(MaxBlocksXHero - 1) * heroBlockSize : leftPosMainHero += heroBlockSize;
             heroImg.style.transform = "scale(-1, 1)";
         }
-
-        heroImg.style.top = "-32px";
+        heroImg.style.top = "-" + heroBlockSize + "px";
         heroImg.style.left = leftPosMainHero + "px";
+
+        isStandMainHero = true;
     }
     //Удар
     function hitHandler() {
@@ -198,21 +197,48 @@ function windowLoad() {
     }
     //Прыжок
     function jumpHandler() {
-        translateMainHero += 5;
-        topMainHero += 386;
+
+        topMainHero += 196;
 
         if (direction === "right") {
+            translateMainHero += 5;
             hero.style.left = translateMainHero + "%";
         } else {
-            hero.style.left = "-" + translateMainHero + "%";
+            translateMainHero -= 5;
+            hero.style.left = translateMainHero + "%";
         }
 
         hero.style.bottom = topMainHero + "px";
 
+        checkFalling();
         if (isFalling)
             fall = true;
         else fall = false;
+        //console.log(isFalling);
     }
+    function fallHandler() {
+        topMainHero -= 25;
+        hero.style.bottom = topMainHero + "px";
+
+        if (direction === "right") {
+            leftPosMainHero = -(heroBlockSize * 2);
+            heroImg.style.transform = "scale(1, 1)";
+        } else {
+            leftPosMainHero = -(heroBlockSize * 3);
+            heroImg.style.transform = "scale(-1, 1)";
+        }
+        heroImg.style.top = -(heroBlockSize * 2) + "px";
+        heroImg.style.left = leftPosMainHero + "px";
+
+        checkFalling();
+        if (isFalling)
+            fall = true;
+        else { 
+            fall = false;
+            hero.style.bottom = `${heroY * 32}px`;
+         }
+    }
+
 
     function createTile(x, y = 1) {
         const tile = document.createElement("img");
@@ -249,8 +275,8 @@ function windowLoad() {
     }
 
     function updateHeroXY() {
-        heroX = Math.floor(Number.parseInt(getComputedStyle(hero).left) / 32);
-        heroY = Math.floor(Number.parseInt(getComputedStyle(hero).bottom) / 32);
+        heroX = Math.ceil(Number.parseInt(getComputedStyle(hero).left) / 32);
+        heroY = Math.ceil(Number.parseInt(getComputedStyle(hero).bottom) / 32);
     }
 
 
@@ -265,12 +291,23 @@ function windowLoad() {
         }
     }
 
+    function lifeCycle() {
+        animation = setInterval(() => {
+            if (hit) {
+                hitHandler();
+            } else if (jump) {
+                jumpHandler();
+            } else if (fall) {
+                fallHandler();
+            } else {
+                standHanlder();
+            }
+        }, 100);
+    }
+
     function start() {
 
-        animation = setInterval(() => {
-            standHanlder();
-        }, 100);
-        isStandMainHero = true;
+        lifeCycle();
 
         for (let i = 0; i < 100; i++) {
             if (i > 10 && i < 16) continue;
@@ -278,6 +315,68 @@ function windowLoad() {
         }
 
         createTilesPlatform(10, 10, 15);
+
+        new Enemy(25, 2);
     }
+
+    //Класс для генерации врага
+    class Enemy {
+
+        posX;
+        posY;
+        img;
+        block;
+        blockSize = 96;
+        SpriteMaxPosX = 3;
+        SpriteMaxPosY = 1;
+        SpritePosX = 0;
+        SpritePosY = 0;
+        timer;
+
+        constructor(x, y) {
+            this.posX = x;
+            this.posY = y;
+
+            this.createEnimy();
+            this.lifeCycle();
+        }
+
+        createEnimy() {
+            this.block = document.createElement('div');
+            this.block.style.cssText = `
+                position: absolute;
+                left: ${this.posX * 32}px;
+                bottom: ${this.posY * 32}px;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+                overflow: hidden;
+            `;
+            game.appendChild(this.block);
+
+            this.img = document.createElement("img");
+            this.img.src = "img/characters/enemies/StandDog.svg";
+            this.img.style.cssText = `
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: ${this.blockSize * this.SpriteMaxPosX}px;
+                height: ${this.blockSize * this.SpriteMaxPosY}px;
+            `;
+            this.block.appendChild(this.img);
+        }
+
+        lifeCycle() {
+            this.timer = setInterval(() => {
+                this.animateEnimy();
+            }, 100);
+        }
+
+        animateEnimy() {
+            this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+            this.SpritePosX === 2 ? this.SpritePosX = 0 : this.SpritePosX++;
+        }
+    }
+
+
     start();
 }
