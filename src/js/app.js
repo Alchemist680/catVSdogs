@@ -12,7 +12,7 @@ function windowLoad() {
 
     //Позиции для главного персонажа
     let leftPosMainHero = 0;
-    let translateMainHero = 5;
+    let translateMainHero = 32;
     let topMainHero = 0;
 
     let heroBlockSize = 96;
@@ -52,7 +52,7 @@ function windowLoad() {
             if (!animation) {
                 animation = setInterval(() => {
                     rightHandler();
-                }, 50);
+                }, 100);
             }
 
         }
@@ -67,7 +67,7 @@ function windowLoad() {
             if (!animation) {
                 animation = setInterval(() => {
                     leftHandler();
-                }, 50);
+                }, 100);
             }
 
         }
@@ -94,7 +94,7 @@ function windowLoad() {
             }
 
         }
-        if (keyPressed === "KeyW" || keyPressed === "Space") {
+        if (keyPressed === "KeyW" || keyPressed === "Space" || keyPressed === "ArrowTop") {
             jumpHandler();
         }
     });
@@ -104,16 +104,16 @@ function windowLoad() {
         //animation = null;
         isStandMainHero = true;
 
-        lifeCycle();
+        //lifeCycle();
 
     });
 
     //ФУнкция передвижения главного героя вправо
     function rightHandler() {
         leftPosMainHero <= -heroBlockSize * (MaxBlocksXHero - 1) ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
-        translateMainHero >= 90 ? null : translateMainHero += 1;
+        translateMainHero >= 900 ? null : translateMainHero += 30;
 
-        hero.style.left = translateMainHero + "%";
+        hero.style.left = translateMainHero + "px";
 
         heroImg.style.top = "0px";
         heroImg.style.transform = "scale(1, 1)";
@@ -129,9 +129,9 @@ function windowLoad() {
     //передвижение влево
     function leftHandler() {
         leftPosMainHero >= 0 ? leftPosMainHero = -heroBlockSize * (MaxBlocksXHero - 1) : leftPosMainHero += heroBlockSize;
-        translateMainHero <= 5 ? null : translateMainHero -= 1;
+        translateMainHero <= 32 ? null : translateMainHero -= 30;
 
-        hero.style.left = translateMainHero + "%";
+        hero.style.left = translateMainHero + "px";
 
         heroImg.style.top = "0px";
         heroImg.style.transform = "scale(-1, 1)";
@@ -201,11 +201,11 @@ function windowLoad() {
         topMainHero += 196;
 
         if (direction === "right") {
-            translateMainHero += 5;
-            hero.style.left = translateMainHero + "%";
+            translateMainHero += 250;
+            hero.style.left = translateMainHero + "px";
         } else {
-            translateMainHero -= 5;
-            hero.style.left = translateMainHero + "%";
+            translateMainHero -= 250;
+            hero.style.left = translateMainHero + "px";
         }
 
         hero.style.bottom = topMainHero + "px";
@@ -217,7 +217,7 @@ function windowLoad() {
         //console.log(isFalling);
     }
     function fallHandler() {
-        topMainHero -= 25;
+        topMainHero -= 15;
         hero.style.bottom = topMainHero + "px";
 
         if (direction === "right") {
@@ -233,10 +233,10 @@ function windowLoad() {
         checkFalling();
         if (isFalling)
             fall = true;
-        else { 
+        else {
             fall = false;
             hero.style.bottom = `${heroY * 32}px`;
-         }
+        }
     }
 
 
@@ -292,7 +292,7 @@ function windowLoad() {
     }
 
     function lifeCycle() {
-        animation = setInterval(() => {
+        setInterval(() => {
             if (hit) {
                 hitHandler();
             } else if (jump) {
@@ -322,22 +322,42 @@ function windowLoad() {
     //Класс для генерации врага
     class Enemy {
 
+        STAND = "stand";
+        ATTACK = "attack";
+        DEATH = "death";
+        WALK = "walk";
+
         posX;
         posY;
+        startX;
+        travelInterval = 6;
+        direction = .1;
         img;
         block;
         blockSize = 96;
+        timer;
+        animation;
+        animationSome;
+        state = "stand";
+        animateWasChanged = true;
+
         SpriteMaxPosX = 3;
         SpriteMaxPosY = 1;
         SpritePosX = 0;
         SpritePosY = 0;
-        timer;
+
+        NumPosStand = 2;
+        NumPosAttack = 1;
+        NUmPosDeath = 6;
 
         constructor(x, y) {
             this.posX = x;
             this.posY = y;
+            this.startX = this.posX;
 
             this.createEnimy();
+
+            this.changeAnimate(this.WALK);
             this.lifeCycle();
         }
 
@@ -367,13 +387,84 @@ function windowLoad() {
 
         lifeCycle() {
             this.timer = setInterval(() => {
-                this.animateEnimy();
+                //this.move();
+                if (this.animateWasChanged) {
+                    this.animateWasChanged = false;
+                    switch (this.state) {
+                        case this.DEATH:
+                            this.deathAnimate();
+                            break;
+                        case this.WALK:
+                            this.walkAnimate();
+                            break;
+                        case this.STAND:
+                            this.standAnimate();
+                            break;
+                        case this.ATTACK:
+                            this.attackAnimate();
+                            break;
+                        case this.DEATH:
+                            this.deathAnimate();
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }, 100);
         }
 
-        animateEnimy() {
-            this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
-            this.SpritePosX === 2 ? this.SpritePosX = 0 : this.SpritePosX++;
+        changeAnimate(stateStr) {
+            clearInterval(this.animation);
+            this.animation = null;
+            clearInterval(this.animationSome);
+            this.animationSome = null;
+
+            this.state = stateStr;
+            this.animateWasChanged = true;
+        }
+        
+        standAnimate() {
+            this.animation = setInterval(() => {
+                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                this.SpritePosX === this.NumPosStand ? this.SpritePosX = 0 : this.SpritePosX++;
+            }, 100);
+        }
+
+        walkAnimate() {
+            this.animationSome = setInterval(() => {
+                this.move();
+            }, 17);
+            this.animation = setInterval(() => {
+                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                this.SpritePosX === this.NumPosStand ? this.SpritePosX = 0 : this.SpritePosX++;
+            }, 100);
+        }
+        move() {
+            if (this.posX > this.startX + this.travelInterval) {
+                this.direction *= -1;
+                this.img.style.transform = "scale(-1, 1)";
+            }
+            else if (this.posX <= this.startX) {
+                this.direction = Math.abs(this.direction);
+                this.img.style.transform = "scale(1, 1)";
+            }
+
+            this.posX += this.direction;
+            this.block.style.left = this.posX * 32 + "px";
+        }
+
+        attackAnimate() {
+            this.animation = setInterval(() => {
+                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                this.SpritePosX === this.NumPosAttack ? this.SpritePosX = 0 : this.SpritePosX++;
+            }, 100);
+        }
+
+        deathAnimate() {
+            this.animation = setInterval(() => {
+                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                this.SpritePosX === this.NUmPosDeath ? this.SpritePosX = 0 : this.SpritePosX++;
+            }, 100);
         }
     }
 
