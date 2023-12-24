@@ -15,72 +15,63 @@ function windowLoad() {
     let translateMainHero = 32;
     let topMainHero = 0;
 
-    let heroBlockSize = 96;
+    const heroBlockSize = 96;
     let MaxBlocksXHero = 7;
 
-    //Стоит ли кот
-    let isStandMainHero = false;
+    /* let isStandMainHero = true;
     let hit = false;
     let jump = false;
-    let fall = false;
+    let fall = false; */
+    let state = "stand";
+
     //В какую сторону повернут кот
     let direction = "right";
     //переменная для анимации
     let animation;
+    let animationSome;
+    let animateWasChanged = true;
 
     let heroX = Math.ceil(Number.parseInt(getComputedStyle(hero).left) / 32);
     let heroY = Math.ceil(Number.parseInt(getComputedStyle(hero).bottom) / 32);
 
     let isFalling = false;
 
+    const heightJump = 150;
+
 
     //для карты переменные
     let tileArray = [];
+
+    //Функция для иземенеия состояния персонажа
+    function changeAnimate(stateStr) {
+        clearInterval(animation);
+        clearInterval(animationSome);
+        animation = null;
+        animationSome = null;
+        animateWasChanged = true;
+        state = stateStr;
+    }
 
     //Обработчик нажатия на клавишу
     document.addEventListener("keydown", (e) => {
         const keyPressed = e.code;
 
         if (keyPressed === "KeyD" || keyPressed === "ArrowRight") {
-
-            if (isStandMainHero) {
-                clearInterval(animation);
-                animation = null;
-                isStandMainHero = false;
-            }
-
-            if (!animation) {
-                animation = setInterval(() => {
-                    rightHandler();
-                }, 100);
+            if (state != "rightWalk" && state != "fall") {
+                changeAnimate("rightWalk");
+                rightHandler();
             }
 
         }
         if (keyPressed === "KeyA" || keyPressed === "ArrowLeft") {
-
-            if (isStandMainHero) {
-                clearInterval(animation);
-                animation = null;
-                isStandMainHero = false;
+            if (state != "leftWalk" && state != "fall") {
+                changeAnimate("leftWalk");
+                leftHandler();
             }
-
-            if (!animation) {
-                animation = setInterval(() => {
-                    leftHandler();
-                }, 100);
-            }
-
         }
 
         if (keyPressed === "KeyF") {
-
-            if (isStandMainHero) {
-                clearInterval(animation);
-                animation = null;
-                isStandMainHero = false;
-            }
-
-            if (!animation) {
+            if (state != "jump" && state != "fall") {
                 let counter = 0;
                 animation = setInterval(() => {
                     counter++;
@@ -94,69 +85,77 @@ function windowLoad() {
             }
 
         }
-        if (keyPressed === "KeyW" || keyPressed === "Space" || keyPressed === "ArrowTop") {
-            jumpHandler();
+        if (keyPressed === "KeyW" || keyPressed === "Space" || keyPressed === "ArrowUp") {
+            if (state != "jump" && state != "fall") {
+                changeAnimate("jump");
+                jumpHandler();
+            }
         }
     });
     //Обработчик опускания клавиши
     document.addEventListener("keyup", (e) => {
-        clearInterval(animation);
-        //animation = null;
-        isStandMainHero = true;
-
-        //lifeCycle();
-
+        if (state != "fall" && state != "jump")
+            changeAnimate("stand");
     });
 
     //ФУнкция передвижения главного героя вправо
     function rightHandler() {
-        leftPosMainHero <= -heroBlockSize * (MaxBlocksXHero - 1) ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
-        translateMainHero >= 900 ? null : translateMainHero += 30;
-
-        hero.style.left = translateMainHero + "px";
 
         heroImg.style.top = "0px";
         heroImg.style.transform = "scale(1, 1)";
-        heroImg.style.left = leftPosMainHero + "px";
-
         direction = "right";
 
-        checkFalling();
-        if (isFalling)
-            fall = true;
-        else fall = false;
+        animation = setInterval(() => {
+            leftPosMainHero <= -heroBlockSize * (MaxBlocksXHero - 1) ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
+            heroImg.style.left = leftPosMainHero + "px";
+        }, 60);
+
+        animationSome = setInterval(() => {
+            translateMainHero >= 900 ? null : translateMainHero += 3;
+            hero.style.left = translateMainHero + "px";
+
+            checkFalling();
+            if (isFalling)
+                changeAnimate("fall");
+        }, 17);
+
     }
     //передвижение влево
     function leftHandler() {
-        leftPosMainHero >= 0 ? leftPosMainHero = -heroBlockSize * (MaxBlocksXHero - 1) : leftPosMainHero += heroBlockSize;
-        translateMainHero <= 32 ? null : translateMainHero -= 30;
-
-        hero.style.left = translateMainHero + "px";
 
         heroImg.style.top = "0px";
         heroImg.style.transform = "scale(-1, 1)";
-        heroImg.style.left = leftPosMainHero + "px";
-
         direction = "left";
 
-        checkFalling();
-        if (isFalling)
-            fall = true;
-        else fall = false;
+        animation = setInterval(() => {
+            leftPosMainHero >= 0 ? leftPosMainHero = -heroBlockSize * (MaxBlocksXHero - 1) : leftPosMainHero += heroBlockSize;
+
+            heroImg.style.left = leftPosMainHero + "px";
+        }, 60);
+
+        animationSome = setInterval(() => {
+            hero.style.left = translateMainHero + "px";
+            translateMainHero <= 32 ? null : translateMainHero -= 3;
+
+            checkFalling();
+            if (isFalling)
+                changeAnimate("fall");
+        }, 17);
     }
     //анимация стоянки
     function standHanlder() {
-        if (direction === "right") {
-            leftPosMainHero <= -heroBlockSize ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
-            heroImg.style.transform = "scale(1, 1)";
-        } else {
-            leftPosMainHero >= -((MaxBlocksXHero - 1) * heroBlockSize - heroBlockSize) ? leftPosMainHero = -(MaxBlocksXHero - 1) * heroBlockSize : leftPosMainHero += heroBlockSize;
-            heroImg.style.transform = "scale(-1, 1)";
-        }
-        heroImg.style.top = "-" + heroBlockSize + "px";
-        heroImg.style.left = leftPosMainHero + "px";
+        animation = setInterval(() => {
+            if (direction === "right") {
+                leftPosMainHero <= -heroBlockSize ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
+                heroImg.style.transform = "scale(1, 1)";
+            } else {
+                leftPosMainHero >= -((MaxBlocksXHero - 1) * heroBlockSize - heroBlockSize) ? leftPosMainHero = -(MaxBlocksXHero - 1) * heroBlockSize : leftPosMainHero += heroBlockSize;
+                heroImg.style.transform = "scale(-1, 1)";
+            }
 
-        isStandMainHero = true;
+            heroImg.style.top = "-" + heroBlockSize + "px";
+            heroImg.style.left = leftPosMainHero + "px";
+        }, 100);
     }
     //Удар
     function hitHandler() {
@@ -197,29 +196,47 @@ function windowLoad() {
     }
     //Прыжок
     function jumpHandler() {
+        const startPosY = topMainHero;
+        topMainHero = heroY * 32;
 
-        topMainHero += 196;
+        //картинка прышка
+        heroImg.style.top = -heroBlockSize * 2 + "px";
+        animationSome = setInterval(() => {
+            if (direction === "right") {
+                leftPosMainHero <= -heroBlockSize * 4 ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
+                heroImg.style.transform = "scale(1, 1)";
+            } else {
+                leftPosMainHero >= -(MaxBlocksXHero - heroBlockSize * 4) ? leftPosMainHero = -heroBlockSize * MaxBlocksXHero : leftPosMainHero += heroBlockSize;
+                heroImg.style.transform = "scale(-1, 1)";
+            }
 
-        if (direction === "right") {
-            translateMainHero += 250;
-            hero.style.left = translateMainHero + "px";
-        } else {
-            translateMainHero -= 250;
-            hero.style.left = translateMainHero + "px";
-        }
+            heroImg.style.left = leftPosMainHero + "px";
+        }, heightJump / 10 * 17 / 4);
 
-        hero.style.bottom = topMainHero + "px";
+        //передвижение персонажа
+        animation = setInterval(() => {
+            topMainHero += 10;
+            if (topMainHero - startPosY > heightJump) {
+                checkFalling();
+                if (isFalling) {
+                    changeAnimate("fall");
+                }
+                else changeAnimate("stand");
+            }
 
-        checkFalling();
-        if (isFalling)
-            fall = true;
-        else fall = false;
-        //console.log(isFalling);
+            if (direction === "right") {
+                translateMainHero += 10;
+                hero.style.left = translateMainHero + "px";
+            } else {
+                translateMainHero -= 10;
+                hero.style.left = translateMainHero + "px";
+            }
+            hero.style.bottom = topMainHero + "px";
+        }, 17);
     }
     function fallHandler() {
-        topMainHero -= 15;
-        hero.style.bottom = topMainHero + "px";
 
+        heroImg.style.top = -(heroBlockSize * 2) + "px";
         if (direction === "right") {
             leftPosMainHero = -(heroBlockSize * 2);
             heroImg.style.transform = "scale(1, 1)";
@@ -227,16 +244,22 @@ function windowLoad() {
             leftPosMainHero = -(heroBlockSize * 3);
             heroImg.style.transform = "scale(-1, 1)";
         }
-        heroImg.style.top = -(heroBlockSize * 2) + "px";
+
+
+        animation = setInterval(() => {
+            topMainHero -= 3;
+            hero.style.bottom = topMainHero + "px";
+            checkFalling();
+            if (!isFalling) {
+                hero.style.bottom = `${heroY * 32}px`;
+                changeAnimate("stand");
+            }
+        }, 17);
+
+
         heroImg.style.left = leftPosMainHero + "px";
 
-        checkFalling();
-        if (isFalling)
-            fall = true;
-        else {
-            fall = false;
-            hero.style.bottom = `${heroY * 32}px`;
-        }
+
     }
 
 
@@ -293,14 +316,17 @@ function windowLoad() {
 
     function lifeCycle() {
         setInterval(() => {
-            if (hit) {
-                hitHandler();
-            } else if (jump) {
-                jumpHandler();
-            } else if (fall) {
-                fallHandler();
-            } else {
-                standHanlder();
+            if (animateWasChanged) {
+                animateWasChanged = false;
+                if (state === "fall") {
+                    fallHandler();
+                    /*   } else if (state === "jump") {
+                          jumpHandler(); */
+                    /*  } else if (state === "hitt") {
+                         hitHandler(); */
+                } else if (state === "stand") {
+                    standHanlder();
+                }
             }
         }, 100);
     }
@@ -310,11 +336,12 @@ function windowLoad() {
         lifeCycle();
 
         for (let i = 0; i < 100; i++) {
-            if (i > 10 && i < 16) continue;
+            if (i > 10 && i < 12) continue;
             addTiles(i);
         }
 
-        createTilesPlatform(10, 10, 15);
+        createTilesPlatform(10, 6, 15);
+        createTilesPlatform(34, 2, 5);
 
         new Enemy(25, 2);
     }
@@ -339,15 +366,17 @@ function windowLoad() {
         animation;
         animationSome;
         state = "stand";
+        attack = false;
         animateWasChanged = true;
 
-        SpriteMaxPosX = 3;
-        SpriteMaxPosY = 1;
+        SpriteMaxPosX = 6;
+        SpriteMaxPosY = 5;
         SpritePosX = 0;
         SpritePosY = 0;
 
         NumPosStand = 2;
-        NumPosAttack = 1;
+        NumPosWalk = 5;
+        NumPosAttack = 3;
         NUmPosDeath = 6;
 
         constructor(x, y) {
@@ -357,8 +386,15 @@ function windowLoad() {
 
             this.createEnimy();
 
-            this.changeAnimate(this.WALK);
+            //this.changeAnimate(this.WALK);
             this.lifeCycle();
+
+            setInterval(() => {
+                if (this.state === this.STAND)
+                    this.changeAnimate(this.WALK);
+                else if (this.state === this.WALK)
+                    this.changeAnimate(this.STAND);
+            }, 3000);
         }
 
         createEnimy() {
@@ -387,7 +423,9 @@ function windowLoad() {
 
         lifeCycle() {
             this.timer = setInterval(() => {
-                //this.move();
+
+                this.checkCollide();
+
                 if (this.animateWasChanged) {
                     this.animateWasChanged = false;
                     switch (this.state) {
@@ -413,6 +451,27 @@ function windowLoad() {
             }, 100);
         }
 
+        //Проверка столкновения с героем
+        checkCollide() {
+            if (heroY == this.posY) {
+                if (heroX == Math.floor(this.posX)) {
+                    if (!this.attack) {
+                        this.changeAnimate(this.ATTACK);
+                    }
+                } else if (heroX == Math.floor(this.posX + 2) || heroX == Math.floor(this.posX + 1)) {
+                    if (!this.attack) {
+                        this.changeAnimate(this.ATTACK);
+                    }
+                } else if (this.state === this.ATTACK) {
+                    this.changeAnimate(this.WALK);
+                    this.attack = false;
+                }
+            } else if (this.state === this.ATTACK) {
+                this.changeAnimate(this.WALK);
+                this.attack = false;
+            }
+        }
+
         changeAnimate(stateStr) {
             clearInterval(this.animation);
             this.animation = null;
@@ -422,42 +481,82 @@ function windowLoad() {
             this.state = stateStr;
             this.animateWasChanged = true;
         }
-        
+
         standAnimate() {
+            this.img.style.top = "0px";
+            this.img.style.left = "0px";
+            this.SpritePosX = 1;
             this.animation = setInterval(() => {
-                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
-                this.SpritePosX === this.NumPosStand ? this.SpritePosX = 0 : this.SpritePosX++;
+
+                if (this.direction === Math.abs(this.direction)) {
+                    this.img.style.transform = "scale(-1, 1)";
+
+                    if (-this.SpritePosX * this.blockSize >= (-(this.SpriteMaxPosX - 1 - this.NumPosStand) * this.blockSize)) {
+                        this.SpritePosX = this.SpriteMaxPosX;
+                    } else {
+                        this.SpritePosX--;
+                        this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                    }
+                } else {
+                    this.img.style.transform = "scale(1, 1)";
+
+                    this.SpritePosX === this.NumPosStand ? this.SpritePosX = 0 : this.SpritePosX++;
+                    this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                }
             }, 100);
         }
 
         walkAnimate() {
+            this.img.style.top = -this.blockSize * 4 + "px";
+            this.img.style.left = "0px";
+            this.SpritePosX = 1;
             this.animationSome = setInterval(() => {
-                this.move();
+                if (this.posX > this.startX + this.travelInterval) {
+                    this.direction *= -1;
+                    this.img.style.transform = "scale(1, 1)";
+                }
+                else if (this.posX <= this.startX) {
+                    this.direction = Math.abs(this.direction);
+                    this.img.style.transform = "scale(-1, 1)";
+                }
+
+                this.posX += this.direction;
+                this.block.style.left = this.posX * 32 + "px";
             }, 17);
             this.animation = setInterval(() => {
                 this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
-                this.SpritePosX === this.NumPosStand ? this.SpritePosX = 0 : this.SpritePosX++;
+                this.SpritePosX === this.NumPosWalk ? this.SpritePosX = 0 : this.SpritePosX++;
             }, 100);
-        }
-        move() {
-            if (this.posX > this.startX + this.travelInterval) {
-                this.direction *= -1;
-                this.img.style.transform = "scale(-1, 1)";
-            }
-            else if (this.posX <= this.startX) {
-                this.direction = Math.abs(this.direction);
-                this.img.style.transform = "scale(1, 1)";
-            }
-
-            this.posX += this.direction;
-            this.block.style.left = this.posX * 32 + "px";
         }
 
         attackAnimate() {
+            this.attack = true;
+            this.img.style.top = this.blockSize * -2 + "px";
+            this.img.style.left = "0px";
+
+            this.SpritePosX = 0;
+
             this.animation = setInterval(() => {
-                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
-                this.SpritePosX === this.NumPosAttack ? this.SpritePosX = 0 : this.SpritePosX++;
-            }, 100);
+                if (this.direction === Math.abs(this.direction)) {
+                    this.img.style.transform = "scale(-1, 1)";
+
+                    if (-this.SpritePosX * this.blockSize >= (-(this.SpriteMaxPosX - 1 - this.NumPosAttack) * this.blockSize)) {
+                        this.SpritePosX = this.SpriteMaxPosX;
+                    } else {
+                        this.SpritePosX--;
+                        this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                    }
+                } else {
+                    this.img.style.transform = "scale(1, 1)";
+                    if (this.SpritePosX >= this.NumPosAttack) {
+                        this.SpritePosX = 0;
+                    } else {
+                        this.SpritePosX++;
+                        this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
+                    }
+                }
+
+            }, 150);
         }
 
         deathAnimate() {

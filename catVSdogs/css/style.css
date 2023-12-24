@@ -274,14 +274,12 @@ body.lock {
 
 /*=============================================================================================================*/
 
-.no-webp .game{
-  background: url(../img/backgrounds/02.png); }
-
 .game {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   position: relative;
+  background: url(../img/backgrounds/02.webp);
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -329,5 +327,3 @@ body.lock {
             transform: translate(0, -0.625rem);
   }
 }
-
-.webp .game{ background: url(../img/backgrounds/02.webp); }
