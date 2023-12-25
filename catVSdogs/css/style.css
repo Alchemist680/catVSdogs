@@ -1,21 +1,12 @@
 @charset "UTF-8";
-
 /*Подключение функций, миксинов /=============================================================================*/
-
 /*=============================================================================================================*/
-
 /*Подключение шрифтов /=============================================================================*/
-
 /* @import 'fonts.scss'; */
-
 /*=============================================================================================================*/
-
 /*Размер шрифта по умолчанию /=============================================================================*/
-
 /*=============================================================================================================*/
-
 /*Контейнер и сетка /=============================================================================*/
-
 [class*=__container] {
   max-width: 62.5rem;
   margin: 0 auto;
@@ -29,49 +20,36 @@
     @media (max-width: $md3){max-width: 470px; padding: 0 10px;}
     @media (max-width: $md4){max-width: 100%; padding: 0 10px;}
 } */
-
 /*=============================================================================================================*/
-
 /*Иконочный шрифт /=============================================================================*/
-
 /* @import 'icons'; */
-
 /*=============================================================================================================*/
-
 /*Обнуление /=============================================================================*/
-
 * {
   padding: 0;
   margin: 0;
   border: 0;
 }
 
-*,
-*:before,
-*:after {
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
 
-:focus,
-:active {
+:focus, :active {
   outline: none;
 }
 
-a:focus,
-a:active {
+a:focus, a:active {
   outline: none;
 }
 
-nav,
-footer,
-header,
-aside {
+nav, footer, header, aside {
   display: block;
 }
 
-html,
-body {
+html, body {
   height: 100%;
   width: 100%;
   font-size: 100%;
@@ -81,9 +59,7 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-input,
-button,
-textarea {
+input, button, textarea {
   font-family: inherit;
 }
 
@@ -100,8 +76,7 @@ button::-moz-focus-inner {
   border: 0;
 }
 
-a,
-a:visited {
+a, a:visited {
   text-decoration: none;
 }
 
@@ -121,37 +96,25 @@ img {
   vertical-align: top;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-size: inherit;
   font-weight: inherit;
 }
 
 /*=============================================================================================================*/
-
 /*Переменные для адаптивного свойства /=============================================================================*/
-
 /*=============================================================================================================*/
-
 /*Основные цвета /=============================================================================*/
-
 :root {
   --color-main: #000;
 }
 
 /*=============================================================================================================*/
-
 /*Основные стили /=============================================================================*/
-
 body {
   font-size: 1rem;
   font-family: "Pixelify Sans", sans-serif;
 }
-
 body.lock {
   overflow: hidden;
 }
@@ -160,62 +123,34 @@ body.lock {
   min-height: 100%;
   width: 100%;
   overflow: clip;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
 }
 
 .page {
-  -webkit-box-flex: 1;
-      -ms-flex: 1 1 auto;
-          flex: 1 1 auto;
-  display: -webkit-box;
-  display: -ms-flexbox;
+  flex: 1 1 auto;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0.5))), url(../img/backgrounds/main.webp);
+  flex-direction: column;
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../img/backgrounds/main.webp);
   background-size: cover;
   background-repeat: no-repeat;
 }
 
 /*=============================================================================================================*/
-
 /*Общие блоки /=============================================================================*/
-
 /*=============================================================================================================*/
-
 /*=============================================================================================================*/
-
 .levels {
-  -webkit-box-flex: 1;
-      -ms-flex: 1 1 auto;
-          flex: 1 1 auto;
-  display: -webkit-box;
-  display: -ms-flexbox;
+  flex: 1 1 auto;
   display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  justify-content: center;
+  align-items: center;
 }
-
 .levels__container {
-  display: -ms-grid;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
   gap: 1.25rem;
 }
-
 .levels__item {
   border-radius: 0.3125rem;
   position: relative;
@@ -223,22 +158,19 @@ body.lock {
   padding-bottom: 100%;
   display: block;
   border: 0.1875rem solid #b05200;
-  -webkit-box-shadow: 0 0 0.625rem rgba(255, 255, 255, 0.4862745098);
-          box-shadow: 0 0 0.625rem rgba(255, 255, 255, 0.4862745098);
-  -webkit-transition: -webkit-box-shadow 0.3s ease, -webkit-transform 0.3s ease;
-  transition: -webkit-box-shadow 0.3s ease, -webkit-transform 0.3s ease;
+  box-shadow: 0 0 0.625rem rgba(255, 255, 255, 0.4862745098);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
-  transition: box-shadow 0.3s ease, transform 0.3s ease, -webkit-box-shadow 0.3s ease, -webkit-transform 0.3s ease;
 }
-
 .levels__item:focus {
-  -webkit-box-shadow: 0 0 0.9375rem rgba(255, 255, 255, 0.6352941176);
-          box-shadow: 0 0 0.9375rem rgba(255, 255, 255, 0.6352941176);
-  -webkit-transform: translate(0, -0.625rem);
-      -ms-transform: translate(0, -0.625rem);
-          transform: translate(0, -0.625rem);
+  box-shadow: 0 0 0.9375rem rgba(255, 255, 255, 0.6352941176);
+  transform: translate(0, -0.625rem);
 }
-
+@media (any-hover: hover) {
+  .levels__item:hover {
+    box-shadow: 0 0 0.9375rem rgba(255, 255, 255, 0.6352941176);
+    transform: translate(0, -0.625rem);
+  }
+}
 .levels__item::after {
   content: "";
   position: absolute;
@@ -248,32 +180,31 @@ body.lock {
   height: 100%;
   background: rgba(0, 0, 0, 0.4);
 }
-
 .levels__item img {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
-
 .levels__numb {
   color: #fff;
   position: absolute;
   top: 50%;
   z-index: 10;
   left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-      -ms-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
   font-weight: 700;
   font-size: 3.75rem;
 }
+@media (max-width: 1440px) {
+  .levels__numb {
+    font-size: calc(45px + 15 * (100vw - 320px) / 1120);
+  }
+}
 
 /*=============================================================================================================*/
-
 .game {
   width: 100vw;
   height: 100vh;
@@ -283,19 +214,15 @@ body.lock {
   background-size: cover;
   background-repeat: no-repeat;
 }
-
 .game__heroes {
   width: 96px;
   height: 96px;
   overflow: hidden;
-  -webkit-transform: scale(1);
-      -ms-transform: scale(1);
-          transform: scale(1);
+  transform: scale(1);
   bottom: 64px;
   left: 32px;
   position: absolute;
 }
-
 .game__heroes img {
   width: 672px;
   height: 480px;
@@ -305,25 +232,6 @@ body.lock {
 }
 
 /*=============================================================================================================*/
-
 /*=============================================================================================================*/
-
 /*=============================================================================================================*/
-
 /*=============================================================================================================*/
-
-@media (max-width: 1440px) {
-  .levels__numb {
-    font-size: calc(45px + 15 * (100vw - 320px) / 1120);
-  }
-}
-
-@media (any-hover: hover) {
-  .levels__item:hover {
-    -webkit-box-shadow: 0 0 0.9375rem rgba(255, 255, 255, 0.6352941176);
-            box-shadow: 0 0 0.9375rem rgba(255, 255, 255, 0.6352941176);
-    -webkit-transform: translate(0, -0.625rem);
-        -ms-transform: translate(0, -0.625rem);
-            transform: translate(0, -0.625rem);
-  }
-}

@@ -74,10 +74,6 @@ function windowLoad() {
     const heroBlockSize = 96;
     let MaxBlocksXHero = 7;
 
-    /* let isStandMainHero = true;
-    let hit = false;
-    let jump = false;
-    let fall = false; */
     let state = "stand";
 
     //В какую сторону повернут кот
@@ -93,6 +89,10 @@ function windowLoad() {
     let isFalling = false;
 
     const heightJump = 150;
+
+    //для блокировок ходьбы персонажа в какую-либо сторону при получении урона
+    let isRightSideBlocked = false;
+    let isLeftSideBlocked = false;
 
 
     //для карты переменные
@@ -113,28 +113,31 @@ function windowLoad() {
         const keyPressed = e.code;
 
         if (keyPressed === "KeyD" || keyPressed === "ArrowRight") {
-            if (state != "rightWalk" && state != "fall") {
-                changeAnimate("rightWalk");
-                rightHandler();
+            if (!isRightSideBlocked) {
+                if (state != "rightWalk" && state != "fall" && state != "hurt") {
+                    changeAnimate("rightWalk");
+                    rightHandler();
+                }
             }
-
         }
         if (keyPressed === "KeyA" || keyPressed === "ArrowLeft") {
-            if (state != "leftWalk" && state != "fall") {
-                changeAnimate("leftWalk");
-                leftHandler();
+            if (!isLeftSideBlocked) {
+                if (state != "leftWalk" && state != "fall" && state != "hurt") {
+                    changeAnimate("leftWalk");
+                    leftHandler();
+                }
             }
         }
 
         if (keyPressed === "KeyF") {
-            if (state != "jump" && state != "fall" && state != "hit") {
+            if (state != "jump" && state != "fall" && state != "hit" && state != "hurt") {
                 changeAnimate("hit");
                 hitHandler();
             }
 
         }
         if (keyPressed === "KeyW" || keyPressed === "Space" || keyPressed === "ArrowUp") {
-            if (state != "jump" && state != "fall") {
+            if (state != "jump" && state != "fall" && state != "hurt") {
                 changeAnimate("jump");
                 jumpHandler();
             }
@@ -165,6 +168,10 @@ function windowLoad() {
             checkFalling();
             if (isFalling)
                 changeAnimate("fall");
+
+            if (isRightSideBlocked) {
+                changeAnimate("stand");
+            }
         }, 17);
 
     }
@@ -188,6 +195,10 @@ function windowLoad() {
             checkFalling();
             if (isFalling)
                 changeAnimate("fall");
+
+            if (isLeftSideBlocked) {
+                changeAnimate("stand");
+            }
         }, 17);
     }
     //анимация стоянки
@@ -242,18 +253,28 @@ function windowLoad() {
     }
     //Прыжок
     function jumpHandler() {
-        const startPosY = topMainHero;
         topMainHero = heroY * 32;
-
+        const startPosY = topMainHero;
         //картинка прышка
         heroImg.style.top = -heroBlockSize * 2 + "px";
+
+        //установка изначального положения спрайта
+        if (direction === "right") {
+            heroImg.style.left = "0px";
+            leftPosMainHero = 0;
+            heroImg.style.transform = "scale(1, 1)";
+        }
+        else {
+            heroImg.style.left = -heroBlockSize * MaxBlocksXHero + "px";
+            leftPosMainHero = -heroBlockSize * MaxBlocksXHero;
+            heroImg.style.transform = "scale(-1, 1)";
+        }  
+
         animationSome = setInterval(() => {
             if (direction === "right") {
                 leftPosMainHero <= -heroBlockSize * 4 ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
-                heroImg.style.transform = "scale(1, 1)";
             } else {
                 leftPosMainHero >= -(MaxBlocksXHero - heroBlockSize * 4) ? leftPosMainHero = -heroBlockSize * MaxBlocksXHero : leftPosMainHero += heroBlockSize;
-                heroImg.style.transform = "scale(-1, 1)";
             }
 
             heroImg.style.left = leftPosMainHero + "px";
@@ -307,6 +328,18 @@ function windowLoad() {
 
 
     }
+    function hurtHanlder() {
+        heroImg.style.top = -heroBlockSize * 4 + "px";
+        if (direction === "right") {
+            heroImg.style.left = "0px";
+        } else {
+            heroImg.style.left = -(MaxBlocksXHero - 1) * heroBlockSize + "px";
+        }
+
+        setTimeout(() => {
+            changeAnimate("stand");
+        }, 100);
+    }
 
 
     function createTile(x, y = 1) {
@@ -356,6 +389,9 @@ function windowLoad() {
             if (tileArray[i][0] === heroX && tileArray[i][1] + 1 === heroY) {
                 isFalling = false;
                 break;
+            } else if (tileArray[i][0] === heroX + 1 && tileArray[i][1] + 1 === heroY) {
+                isFalling = false;
+                break;
             }
         }
     }
@@ -372,9 +408,12 @@ function windowLoad() {
                          hitHandler(); */
                 } else if (state === "stand") {
                     standHanlder();
+                } else if (state === "hurt") {
+                    hurtHanlder();
                 }
+                
             }
-        }, 100);
+        }, 17);
     }
 
     function start() {
@@ -430,7 +469,7 @@ function windowLoad() {
         NumPosHurt = 1;
         NumPosWalk = 5;
         NumPosAttack = 3;
-        NUmPosDeath = 6;
+        NUmPosDeath = 3;
 
         lives = 2;
 
@@ -507,13 +546,15 @@ function windowLoad() {
                             break;
                     }
                 }
-            }, 100);
+            }, 17);
         }
 
         //Проверка столкновения с героем
         checkCollide() {
             if (heroY == this.posY) {
                 if (heroX == Math.floor(this.posX)) {
+                    isRightSideBlocked = true;
+                    isLeftSideBlocked = false;
                     if (state === "hit" && this.state != this.HURT) {
                         this.changeAnimate(this.HURT);
                         lives--;
@@ -522,6 +563,8 @@ function windowLoad() {
                         this.changeAnimate(this.ATTACK);
                     }
                 } else if (heroX == Math.floor(this.posX + 2) || heroX == Math.floor(this.posX + 1)) {
+                    isLeftSideBlocked = true;
+                    isRightSideBlocked = false;
                     if (state === "hit" && this.state != this.HURT) {
                         this.changeAnimate(this.HURT);
                         lives--;
@@ -532,10 +575,16 @@ function windowLoad() {
                 } else if (this.state === this.ATTACK) {
                     this.changeAnimate(this.WALK);
                     this.attack = false;
+
+                    isLeftSideBlocked = false;
+                    isRightSideBlocked = false;
                 }
             } else if (this.state === this.ATTACK) {
                 this.changeAnimate(this.WALK);
                 this.attack = false;
+
+                isLeftSideBlocked = false;
+                isRightSideBlocked = false;
             }
         }
 
@@ -610,6 +659,7 @@ function windowLoad() {
                     if (-this.SpritePosX * this.blockSize >= (-(this.SpriteMaxPosX - 1 - this.NumPosAttack) * this.blockSize)) {
                         this.SpritePosX = this.SpriteMaxPosX;
 
+                        changeAnimate("hurt");
                         lives--;
                         killHeart();
                     } else {
@@ -621,6 +671,7 @@ function windowLoad() {
                     if (this.SpritePosX >= this.NumPosAttack) {
                         this.SpritePosX = 0;
 
+                        changeAnimate("hurt");
                         lives--;
                         killHeart();
                     } else {
@@ -638,17 +689,17 @@ function windowLoad() {
             //если повернут влево(по умолчанию)
             if (this.direction === Math.abs(this.direction)) {
                 this.img.style.transform = "scale(-1, 1)";
-                this.img.style.left = -(this.maxPosXSprite - this.NUmPosDeath * this.blockSize) + "px";
-                this.posXSprite = this.maxPosXSprite - this.NUmPosDeath;
+                this.img.style.left = -(this.SpriteMaxPosX - this.NUmPosDeath * this.blockSize) + "px";
+                this.posXSprite = this.SpriteMaxPosX - this.NUmPosDeath;
 
                 animation = setInterval(() => {
-                    if (this.posXSprite >= this.maxPosXSprite) {
+                    if (this.posXSprite >= this.SpriteMaxPosX) {
                         //смерть
                         //this.block.style.display = "none";
-                        clearInterval(animation);
-                        this.changeAnimate(this.STAND);
+                        //clearInterval(animation);
+                        //this.changeAnimate(this.STAND);
                     } else {
-                        this.img.style.left = -this.maxPosXSprite * this.blockSize + "px";
+                        this.img.style.left = -this.SpriteMaxPosX * this.blockSize + "px";
                         this.posXSprite++;
                     }
                 }, 300);
@@ -663,8 +714,8 @@ function windowLoad() {
                     if (this.posXSprite >= this.NUmPosDeath) {
                         //смерть
                         //this.block.style.display = "none";
-                        clearInterval(animation);
-                        this.changeAnimate(this.STAND);
+                        //(animation);
+                        //this.changeAnimate(this.STAND);
                     } else {
                         this.img.style.left = this.posXSprite * this.blockSize + "px";
                         this.posXSprite++;
@@ -689,9 +740,6 @@ function windowLoad() {
 
         }
     }
-
-
-
 
     start();
 }
