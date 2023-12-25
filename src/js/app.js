@@ -5,10 +5,66 @@ function windowLoad() {
 
     const game = document.querySelector("#game");
 
+    class Heart {
+        img;
+        x;
+        src = "img/icons/heart.svg";
+        block;
+        blockSize = 32;
+        maxPosXSprite = 4;
+
+        generateHearts(x, y) {
+            this.block = document.createElement('div');
+            this.block.classList.add("active");
+            this.block.id = "heart";
+            this.block.style.cssText = `
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+                position: absolute;
+                overflow: hidden;
+                top: ${y * 32}px;
+                left: ${x * 32}px;
+            `;
+            this.img = document.createElement('img');
+            this.img.src = this.src;
+            this.img.style.cssText = `
+                width: ${this.blockSize * this.maxPosXSprite}px;
+                height: ${this.block}px;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            `;
+
+            game.appendChild(this.block);
+            this.block.appendChild(this.img);
+        }
+    }
+    const hearts = new Heart();
+    function killHeart() {
+        const allHearts = document.querySelectorAll("#heart.active");
+        if (allHearts.length) {
+            const currentHeart = allHearts[allHearts.length - 1];
+            currentHeart.classList.remove("active");
+            const img = currentHeart.querySelector("img");
+            let posXSprite = 0;
+
+            const animationHeart = setInterval(() => {
+                if (posXSprite <= 3) {
+                    img.style.left = -posXSprite * 32 + "px";
+                    posXSprite++;
+                } else {
+                    clearInterval(animationHeart);
+                }
+            }, 100);
+        }
+    }
+
     //Главный персонаж
     const hero = document.querySelector("#hero");
     //Картинка главного персонажа
     const heroImg = document.querySelector("#mainHeroes");
+
+    let lives = 5;
 
     //Позиции для главного персонажа
     let leftPosMainHero = 0;
@@ -71,17 +127,9 @@ function windowLoad() {
         }
 
         if (keyPressed === "KeyF") {
-            if (state != "jump" && state != "fall") {
-                let counter = 0;
-                animation = setInterval(() => {
-                    counter++;
-                    hitHandler();
-                    if (counter == 3) {
-                        clearInterval(animation);
-                        animation = null;
-                        isHit = false;
-                    }
-                }, 200);
+            if (state != "jump" && state != "fall" && state != "hit") {
+                changeAnimate("hit");
+                hitHandler();
             }
 
         }
@@ -94,7 +142,7 @@ function windowLoad() {
     });
     //Обработчик опускания клавиши
     document.addEventListener("keyup", (e) => {
-        if (state != "fall" && state != "jump")
+        if (state != "fall" && state != "jump" && state != "hit")
             changeAnimate("stand");
     });
 
@@ -111,7 +159,7 @@ function windowLoad() {
         }, 60);
 
         animationSome = setInterval(() => {
-            translateMainHero >= 900 ? null : translateMainHero += 3;
+            translateMainHero >= 2000 ? null : translateMainHero += 3;
             hero.style.left = translateMainHero + "px";
 
             checkFalling();
@@ -159,38 +207,36 @@ function windowLoad() {
     }
     //Удар
     function hitHandler() {
-
-        /* heroImg.style.transform = "scale(1, 1)";
-        heroImg.style.top = "-32px";
-        leftPosMainHero -= 0;
-        heroImg.style.left = "0px";
-        isHit = true;
-        
-        animation = setTimeout(() => {
-            leftPosMainHero -= 32;
-            console.log(leftPosMainHero);
-            heroImg.style.left = leftPosMainHero + "px";
-
-            if (leftPosMainHero <= -96) {
-                clearInterval(animation);
-                animation = null;
-                isHit = false;
-            }
-        }, 200); */
-
-
+        heroImg.style.top = -heroBlockSize * 3 + "px";
         if (direction === "right") {
-            leftPosMainHero <= -32 ? leftPosMainHero = 0 : leftPosMainHero -= 32;
             heroImg.style.transform = "scale(1, 1)";
+            heroImg.style.left = "0px";
+            leftPosMainHero = 0;
+
+            animation = setInterval(() => {
+                if (leftPosMainHero <= -heroBlockSize * 5) {
+                    changeAnimate("stand");
+                } else {
+                    leftPosMainHero -= heroBlockSize;
+                    heroImg.style.left = leftPosMainHero + "px";
+                }
+            }, 150);
+
         } else {
-            leftPosMainHero >= -160 ? leftPosMainHero = -192 : leftPosMainHero += 32;
             heroImg.style.transform = "scale(-1, 1)";
+            heroImg.style.left = -(MaxBlocksXHero * heroBlockSize - 6 * heroBlockSize) + "px";
+            leftPosMainHero = -(MaxBlocksXHero * heroBlockSize - 6 * heroBlockSize);
+
+            animation = setInterval(() => {
+                if (leftPosMainHero <= -(MaxBlocksXHero - 1) * heroBlockSize) {
+                    changeAnimate("stand");
+                } else {
+                    leftPosMainHero -= heroBlockSize;
+                    heroImg.style.left = leftPosMainHero + "px";
+                }
+            }, 150);
         }
 
-        heroImg.style.top = "-0px";
-        heroImg.style.left = leftPosMainHero + "px";
-
-        isHit = true;
 
 
     }
@@ -344,6 +390,11 @@ function windowLoad() {
         createTilesPlatform(34, 2, 5);
 
         new Enemy(25, 2);
+
+        for (let index = 0.5; index < lives + 0.5; index++) {
+            hearts.generateHearts(index, 0.5);
+        }
+
     }
 
     //Класс для генерации врага
@@ -353,6 +404,7 @@ function windowLoad() {
         ATTACK = "attack";
         DEATH = "death";
         WALK = "walk";
+        HURT = "hurt";
 
         posX;
         posY;
@@ -375,9 +427,12 @@ function windowLoad() {
         SpritePosY = 0;
 
         NumPosStand = 2;
+        NumPosHurt = 1;
         NumPosWalk = 5;
         NumPosAttack = 3;
         NUmPosDeath = 6;
+
+        lives = 2;
 
         constructor(x, y) {
             this.posX = x;
@@ -389,12 +444,13 @@ function windowLoad() {
             //this.changeAnimate(this.WALK);
             this.lifeCycle();
 
-            setInterval(() => {
+            this.changeAnimate(this.WALK);
+            /* setInterval(() => {
                 if (this.state === this.STAND)
                     this.changeAnimate(this.WALK);
                 else if (this.state === this.WALK)
                     this.changeAnimate(this.STAND);
-            }, 3000);
+            }, 3000); */
         }
 
         createEnimy() {
@@ -432,6 +488,9 @@ function windowLoad() {
                         case this.DEATH:
                             this.deathAnimate();
                             break;
+                        case this.HURT:
+                            this.hurtAnimate();
+                            break;
                         case this.WALK:
                             this.walkAnimate();
                             break;
@@ -455,11 +514,19 @@ function windowLoad() {
         checkCollide() {
             if (heroY == this.posY) {
                 if (heroX == Math.floor(this.posX)) {
-                    if (!this.attack) {
+                    if (state === "hit" && this.state != this.HURT) {
+                        this.changeAnimate(this.HURT);
+                        lives--;
+                        if (lives <= 0) this.changeAnimate(this.DEATH);
+                    } else if (!this.attack) {
                         this.changeAnimate(this.ATTACK);
                     }
                 } else if (heroX == Math.floor(this.posX + 2) || heroX == Math.floor(this.posX + 1)) {
-                    if (!this.attack) {
+                    if (state === "hit" && this.state != this.HURT) {
+                        this.changeAnimate(this.HURT);
+                        lives--;
+                        if (lives <= 0) this.changeAnimate(this.DEATH);
+                    } else if (!this.attack) {
                         this.changeAnimate(this.ATTACK);
                     }
                 } else if (this.state === this.ATTACK) {
@@ -542,6 +609,9 @@ function windowLoad() {
 
                     if (-this.SpritePosX * this.blockSize >= (-(this.SpriteMaxPosX - 1 - this.NumPosAttack) * this.blockSize)) {
                         this.SpritePosX = this.SpriteMaxPosX;
+
+                        lives--;
+                        killHeart();
                     } else {
                         this.SpritePosX--;
                         this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
@@ -550,6 +620,9 @@ function windowLoad() {
                     this.img.style.transform = "scale(1, 1)";
                     if (this.SpritePosX >= this.NumPosAttack) {
                         this.SpritePosX = 0;
+
+                        lives--;
+                        killHeart();
                     } else {
                         this.SpritePosX++;
                         this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
@@ -560,12 +633,64 @@ function windowLoad() {
         }
 
         deathAnimate() {
-            this.animation = setInterval(() => {
-                this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
-                this.SpritePosX === this.NUmPosDeath ? this.SpritePosX = 0 : this.SpritePosX++;
-            }, 100);
+            this.img.style.top = -1 * this.blockSize + "px";
+
+            //если повернут влево(по умолчанию)
+            if (this.direction === Math.abs(this.direction)) {
+                this.img.style.transform = "scale(-1, 1)";
+                this.img.style.left = -(this.maxPosXSprite - this.NUmPosDeath * this.blockSize) + "px";
+                this.posXSprite = this.maxPosXSprite - this.NUmPosDeath;
+
+                animation = setInterval(() => {
+                    if (this.posXSprite >= this.maxPosXSprite) {
+                        //смерть
+                        //this.block.style.display = "none";
+                        clearInterval(animation);
+                        this.changeAnimate(this.STAND);
+                    } else {
+                        this.img.style.left = -this.maxPosXSprite * this.blockSize + "px";
+                        this.posXSprite++;
+                    }
+                }, 300);
+
+                //если повернут вправо
+            } else {
+                this.img.style.transform = "scale(1, 1)";
+                this.img.style.left = "0px";
+                this.posXSprite = 0;
+
+                animation = setInterval(() => {
+                    if (this.posXSprite >= this.NUmPosDeath) {
+                        //смерть
+                        //this.block.style.display = "none";
+                        clearInterval(animation);
+                        this.changeAnimate(this.STAND);
+                    } else {
+                        this.img.style.left = this.posXSprite * this.blockSize + "px";
+                        this.posXSprite++;
+                    }
+                }, 300);
+            }
+        }
+
+        hurtAnimate() {
+            this.img.style.top = -3 * this.blockSize + "px";
+            if (this.direction === Math.abs(this.direction)) {
+                this.img.style.transform = "scale(-1, 1)";
+                this.img.style.left = -(this.maxPosXSprite - this.NumPosHurt) * this.blockSize + "px";
+            } else {
+                this.img.style.transform = "scale(1, 1)";
+                this.img.style.left = -this.NumPosHurt * this.blockSize + "px";
+            }
+
+            setTimeout(() => {
+                this.changeAnimate(this.ATTACK);
+            }, 300);
+
         }
     }
+
+
 
 
     start();
