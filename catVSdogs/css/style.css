@@ -304,6 +304,30 @@ body.lock {
   left: 0;
 }
 
+@-webkit-keyframes showHurt {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translate(40px, -40px);
+            transform: translate(40px, -40px);
+    opacity: 0;
+  }
+}
+
+@keyframes showHurt {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translate(40px, -40px);
+            transform: translate(40px, -40px);
+    opacity: 0;
+  }
+}
+
 /*=============================================================================================================*/
 
 /*=============================================================================================================*/

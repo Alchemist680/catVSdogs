@@ -66,6 +66,9 @@ function windowLoad() {
 
     let lives = 5;
 
+    //Скорость передвижения (3 пикселя каждые 17 мс => 180пикс в секунду)
+    let speed = 8;
+
     //Позиции для главного персонажа
     let leftPosMainHero = 0;
     let translateMainHero = 32;
@@ -88,7 +91,7 @@ function windowLoad() {
 
     let isFalling = false;
 
-    const heightJump = 150;
+    let heightJump = 150;
 
     //для блокировок ходьбы персонажа в какую-либо сторону при получении урона
     let isRightSideBlocked = false;
@@ -97,6 +100,16 @@ function windowLoad() {
 
     //для карты переменные
     let tileArray = [];
+    let allObjects = document.createElement("div");
+    allObjects.style.cssText = `
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+    `;
+    game.appendChild(allObjects);
+    let objectsArray = [];
 
     //Функция для иземенеия состояния персонажа
     function changeAnimate(stateStr) {
@@ -145,9 +158,33 @@ function windowLoad() {
     });
     //Обработчик опускания клавиши
     document.addEventListener("keyup", (e) => {
-        if (state != "fall" && state != "jump" && state != "hit")
+        if (state != "fall" && state != "jump" && state != "hit" && state != "hurt")
             changeAnimate("stand");
     });
+
+  
+    //передвижение мира
+    function moveWorldRight() {
+        allObjects.style.left = Number.parseInt(allObjects.style.left) - speed + "px";
+
+        /* i-=speed;
+        console.log(i);
+        if (i === 0) */
+        tileArray.map((elem) => {
+            elem[0] = elem[0] - 1 / (32 / speed);
+        });
+    }
+    function moveWorldLeft() {
+        allObjects.style.left = Number.parseInt(allObjects.style.left) + speed + "px";
+
+       /*  i-=speed;
+        console.log(i);
+        if (i === 0) */
+        tileArray.map((elem) => {
+            elem[0] = elem[0] + 1 / (32 / speed);
+        });
+    }
+
 
     //ФУнкция передвижения главного героя вправо
     function rightHandler() {
@@ -162,17 +199,21 @@ function windowLoad() {
         }, 60);
 
         animationSome = setInterval(() => {
-            translateMainHero >= 2000 ? null : translateMainHero += 3;
-            hero.style.left = translateMainHero + "px";
+            if (checkAhead()) {
+                /* translateMainHero >= 2000 ? null : translateMainHero += speed;
+                hero.style.left = translateMainHero + "px"; */
+              
+                moveWorldRight();
 
-            checkFalling();
-            if (isFalling)
-                changeAnimate("fall");
+                checkFalling();
+                if (isFalling)
+                    changeAnimate("fall");
 
-            if (isRightSideBlocked) {
-                changeAnimate("stand");
+                if (isRightSideBlocked) {
+                    changeAnimate("stand");
+                }
             }
-        }, 17);
+        }, 50);
 
     }
     //передвижение влево
@@ -184,20 +225,23 @@ function windowLoad() {
 
         animation = setInterval(() => {
             leftPosMainHero >= 0 ? leftPosMainHero = -heroBlockSize * (MaxBlocksXHero - 1) : leftPosMainHero += heroBlockSize;
-
             heroImg.style.left = leftPosMainHero + "px";
         }, 60);
 
         animationSome = setInterval(() => {
-            hero.style.left = translateMainHero + "px";
-            translateMainHero <= 32 ? null : translateMainHero -= 3;
+            if (checkAhead()) {
+                /* hero.style.left = translateMainHero + "px";
+                translateMainHero <= 32 ? null : translateMainHero -= speed; */
+               
+                moveWorldLeft();
 
-            checkFalling();
-            if (isFalling)
-                changeAnimate("fall");
+                checkFalling();
+                if (isFalling)
+                    changeAnimate("fall");
 
-            if (isLeftSideBlocked) {
-                changeAnimate("stand");
+                if (isLeftSideBlocked) {
+                    changeAnimate("stand");
+                }
             }
         }, 17);
     }
@@ -268,7 +312,7 @@ function windowLoad() {
             heroImg.style.left = -heroBlockSize * MaxBlocksXHero + "px";
             leftPosMainHero = -heroBlockSize * MaxBlocksXHero;
             heroImg.style.transform = "scale(-1, 1)";
-        }  
+        }
 
         animationSome = setInterval(() => {
             if (direction === "right") {
@@ -283,6 +327,11 @@ function windowLoad() {
         //передвижение персонажа
         animation = setInterval(() => {
             topMainHero += 10;
+
+            if (!checkSoffit()) {
+                changeAnimate("fall");
+            }
+
             if (topMainHero - startPosY > heightJump) {
                 checkFalling();
                 if (isFalling) {
@@ -344,7 +393,7 @@ function windowLoad() {
 
     function createTile(x, y = 1) {
         const tile = document.createElement("img");
-        tile.src = "img/tiles/main.svg";
+        tile.src = "img/tiles/main.jpg";
         tile.style.cssText = `
             position: absolute;
             left: ${x * 32}px;
@@ -352,15 +401,16 @@ function windowLoad() {
             width: 32px;
             height: 32px;
         `;
-        game.appendChild(tile);
+        allObjects.appendChild(tile);
 
         tileArray.push([x, y]);
+        //objectsArray.push(tile);
     }
     function addTiles(i) {
         createTile(i);
 
         const tileBottom = document.createElement("img");
-        tileBottom.src = "img/tiles/foundation.svg";
+        tileBottom.src = "img/tiles/foundation.jpg";
         tileBottom.style.cssText = `
             position: absolute;
             left: ${i * 32}px;
@@ -368,7 +418,8 @@ function windowLoad() {
             width: 32px;
             height: 32px;
         `;
-        game.appendChild(tileBottom);
+        allObjects.appendChild(tileBottom);
+        //objectsArray.push(tileBottom);
     }
     function createTilesPlatform(startX, startY, lenght) {
         for (let i = 0; i < lenght; i++) {
@@ -381,19 +432,58 @@ function windowLoad() {
         heroY = Math.ceil(Number.parseInt(getComputedStyle(hero).bottom) / 32);
     }
 
+    //есть ли впереди персонажа стена
+    //let isAheadOfThwWall = false;
 
+    //проверка должен ли персонаж падать
     function checkFalling() {
         updateHeroXY();
         isFalling = true;
         for (let i = 0; i < tileArray.length; i++) {
-            if (tileArray[i][0] === heroX && tileArray[i][1] + 1 === heroY) {
+            if (Math.ceil(tileArray[i][0]) === heroX && Math.ceil(tileArray[i][1]) + 1 === heroY) {
                 isFalling = false;
                 break;
-            } else if (tileArray[i][0] === heroX + 1 && tileArray[i][1] + 1 === heroY) {
+            } else if (Math.ceil(tileArray[i][0]) === heroX + 2 && Math.ceil(tileArray[i][1]) + 1 === heroY) {
                 isFalling = false;
                 break;
             }
         }
+    }
+    //проверка может ли персонаж идти (есть ли стенка впереди)
+    function checkAhead() {
+        updateHeroXY();
+        if (direction === "right") {
+            for (let i = 0; i < tileArray.length; i++) {
+                if (Math.ceil(tileArray[i][0]) === heroX + 3 && Math.ceil(tileArray[i][1]) + 1 === heroY + 1) {
+                    return false;
+                }
+            }
+        } else {
+            for (let i = 0; i < tileArray.length; i++) {
+                if (Math.ceil(tileArray[i][0]) === heroX - 1 && Math.ceil(tileArray[i][1]) + 1 === heroY + 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    //проверка может ли персонаж лететь вверх (есть ли потолок потолок)
+    function checkSoffit() {
+        updateHeroXY();
+        if (direction === "right") {
+            for (let i = 0; i < tileArray.length; i++) {
+                if (Math.ceil(tileArray[i][0]) === heroX + 1 && Math.ceil(tileArray[i][1]) + 1 === heroY + 2) {
+                    return false;
+                }
+            }
+        } else {
+            for (let i = 0; i < tileArray.length; i++) {
+                if (Math.ceil(tileArray[i][0]) === heroX && Math.ceil(tileArray[i][1]) + 1 === heroY + 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     function lifeCycle() {
@@ -402,16 +492,11 @@ function windowLoad() {
                 animateWasChanged = false;
                 if (state === "fall") {
                     fallHandler();
-                    /*   } else if (state === "jump") {
-                          jumpHandler(); */
-                    /*  } else if (state === "hitt") {
-                         hitHandler(); */
                 } else if (state === "stand") {
                     standHanlder();
                 } else if (state === "hurt") {
                     hurtHanlder();
                 }
-                
             }
         }, 17);
     }
@@ -420,15 +505,19 @@ function windowLoad() {
 
         lifeCycle();
 
-        for (let i = 0; i < 100; i++) {
-            if (i > 10 && i < 12) continue;
+        for (let i = 0; i < 1000; i++) {
+            if (i > 10 && i < 20) continue;
             addTiles(i);
         }
 
         createTilesPlatform(10, 6, 15);
+        createTilesPlatform(20,10, 15);
+        createTilesPlatform(30,14, 15);
         createTilesPlatform(34, 2, 5);
+        createTilesPlatform(4, 2, 3);
 
         new Enemy(25, 2);
+        new Enemy(24, 11);
 
         for (let index = 0.5; index < lives + 0.5; index++) {
             hearts.generateHearts(index, 0.5);
@@ -459,6 +548,7 @@ function windowLoad() {
         state = "stand";
         attack = false;
         animateWasChanged = true;
+        isHurt = false;
 
         SpriteMaxPosX = 6;
         SpriteMaxPosY = 5;
@@ -469,7 +559,7 @@ function windowLoad() {
         NumPosHurt = 1;
         NumPosWalk = 5;
         NumPosAttack = 3;
-        NUmPosDeath = 3;
+        NUmPosDeath = 4;
 
         lives = 2;
 
@@ -481,8 +571,11 @@ function windowLoad() {
             this.createEnimy();
 
             //this.changeAnimate(this.WALK);
-            this.lifeCycle();
 
+            //objectsArray.push(this.block);
+
+            this.lifeCycle();
+            
             this.changeAnimate(this.WALK);
             /* setInterval(() => {
                 if (this.state === this.STAND)
@@ -502,7 +595,7 @@ function windowLoad() {
                 height: ${this.blockSize}px;
                 overflow: hidden;
             `;
-            game.appendChild(this.block);
+            allObjects.appendChild(this.block);
 
             this.img = document.createElement("img");
             this.img.src = "img/characters/enemies/StandDog.svg";
@@ -518,9 +611,7 @@ function windowLoad() {
 
         lifeCycle() {
             this.timer = setInterval(() => {
-
                 this.checkCollide();
-
                 if (this.animateWasChanged) {
                     this.animateWasChanged = false;
                     switch (this.state) {
@@ -551,24 +642,35 @@ function windowLoad() {
 
         //Проверка столкновения с героем
         checkCollide() {
+
             if (heroY == this.posY) {
                 if (heroX == Math.floor(this.posX)) {
                     isRightSideBlocked = true;
                     isLeftSideBlocked = false;
-                    if (state === "hit" && this.state != this.HURT) {
-                        this.changeAnimate(this.HURT);
-                        lives--;
-                        if (lives <= 0) this.changeAnimate(this.DEATH);
+                    if (state === "hit" && this.state != this.HURT && !this.isHurt) {
+                        this.isHurt = true;
+                        //получение урона делаем только через время, так как сначала дожна пройти анимация атаки кота,
+                        //иначе будет многократное получение урона
+                        setTimeout(() => {
+                            this.changeAnimate(this.HURT);
+                            this.showHurt();
+                            this.lives--;
+                        }, 600);
                     } else if (!this.attack) {
                         this.changeAnimate(this.ATTACK);
                     }
                 } else if (heroX == Math.floor(this.posX + 2) || heroX == Math.floor(this.posX + 1)) {
                     isLeftSideBlocked = true;
                     isRightSideBlocked = false;
-                    if (state === "hit" && this.state != this.HURT) {
-                        this.changeAnimate(this.HURT);
-                        lives--;
-                        if (lives <= 0) this.changeAnimate(this.DEATH);
+                    if (state === "hit" && this.state != this.HURT && !this.isHurt) {
+                        this.isHurt = true;
+                        //получение урона делаем только через время, так как сначала дожна пройти анимация атаки кота,
+                        //иначе будет многократное получение урона
+                        setTimeout(() => {
+                            this.changeAnimate(this.HURT);
+                            this.showHurt();
+                            this.lives--;
+                        }, 600);
                     } else if (!this.attack) {
                         this.changeAnimate(this.ATTACK);
                     }
@@ -659,9 +761,12 @@ function windowLoad() {
                     if (-this.SpritePosX * this.blockSize >= (-(this.SpriteMaxPosX - 1 - this.NumPosAttack) * this.blockSize)) {
                         this.SpritePosX = this.SpriteMaxPosX;
 
-                        changeAnimate("hurt");
-                        lives--;
-                        killHeart();
+                        if (state != "jump" && state != "fall") {
+                            changeAnimate("hurt");
+                            lives--;
+                            killHeart();
+                        }
+
                     } else {
                         this.SpritePosX--;
                         this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
@@ -671,9 +776,11 @@ function windowLoad() {
                     if (this.SpritePosX >= this.NumPosAttack) {
                         this.SpritePosX = 0;
 
-                        changeAnimate("hurt");
-                        lives--;
-                        killHeart();
+                        if (state != "jump" && state != "fall") {
+                            changeAnimate("hurt");
+                            lives--;
+                            killHeart();
+                        }
                     } else {
                         this.SpritePosX++;
                         this.img.style.left = -(this.SpritePosX * this.blockSize) + "px";
@@ -690,19 +797,20 @@ function windowLoad() {
             if (this.direction === Math.abs(this.direction)) {
                 this.img.style.transform = "scale(-1, 1)";
                 this.img.style.left = -(this.SpriteMaxPosX - this.NUmPosDeath * this.blockSize) + "px";
-                this.posXSprite = this.SpriteMaxPosX - this.NUmPosDeath;
+                this.posXSprite = this.SpriteMaxPosX + 2 - this.NUmPosDeath;
 
-                animation = setInterval(() => {
-                    if (this.posXSprite >= this.SpriteMaxPosX) {
+                this.animation = setInterval(() => {
+                    if (this.posXSprite < 2) {
+                        clearInterval(this.animation);
                         //смерть
                         //this.block.style.display = "none";
                         //clearInterval(animation);
                         //this.changeAnimate(this.STAND);
                     } else {
-                        this.img.style.left = -this.SpriteMaxPosX * this.blockSize + "px";
-                        this.posXSprite++;
+                        this.img.style.left = -this.posXSprite * this.blockSize + "px";
+                        this.posXSprite--;
                     }
-                }, 300);
+                }, 100);
 
                 //если повернут вправо
             } else {
@@ -710,34 +818,66 @@ function windowLoad() {
                 this.img.style.left = "0px";
                 this.posXSprite = 0;
 
-                animation = setInterval(() => {
-                    if (this.posXSprite >= this.NUmPosDeath) {
+                this.animation = setInterval(() => {
+                    if (this.posXSprite > this.NUmPosDeath) {
+                        clearInterval(this.animation);
                         //смерть
                         //this.block.style.display = "none";
                         //(animation);
                         //this.changeAnimate(this.STAND);
                     } else {
-                        this.img.style.left = this.posXSprite * this.blockSize + "px";
+                        this.img.style.left = -this.posXSprite * this.blockSize + "px";
                         this.posXSprite++;
                     }
-                }, 300);
+                }, 100);
             }
+
+            clearInterval(this.timer);
+            isLeftSideBlocked = false;
+            isRightSideBlocked = false;
         }
 
         hurtAnimate() {
+
             this.img.style.top = -3 * this.blockSize + "px";
             if (this.direction === Math.abs(this.direction)) {
                 this.img.style.transform = "scale(-1, 1)";
-                this.img.style.left = -(this.maxPosXSprite - this.NumPosHurt) * this.blockSize + "px";
+                this.img.style.left = -(this.SpriteMaxPosX - this.NumPosHurt) * this.blockSize + "px";
             } else {
                 this.img.style.transform = "scale(1, 1)";
                 this.img.style.left = -this.NumPosHurt * this.blockSize + "px";
             }
 
             setTimeout(() => {
-                this.changeAnimate(this.ATTACK);
+                this.isHurt = false;
+                if (this.lives <= 0) {
+                    this.changeAnimate(this.DEATH);
+                } else {
+                    this.changeAnimate(this.ATTACK);
+                }
             }, 300);
 
+        }
+
+        //отображение урона
+        showHurt() {
+            const element = document.createElement("p");
+            element.innerText = "-1";
+            element.style.cssText = `
+                color: red;
+                font-weight: 700;
+                font-size: 30px;
+                text-shadow: 1px 1px 2px #000;
+                position: absolute;
+                animation: showHurt 1s ease;
+                left: ${Number.parseInt(this.block.style.left + 50)}px;
+                bottom: ${Number.parseInt(this.block.style.bottom + 32)}px;
+            `;
+            game.appendChild(element);
+
+            setTimeout(() => {
+                element.parentNode.removeChild(element);
+            }, 1000);
         }
     }
 
