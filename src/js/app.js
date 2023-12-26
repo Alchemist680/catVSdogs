@@ -71,7 +71,7 @@ function windowLoad() {
 
     //Позиции для главного персонажа
     let leftPosMainHero = 0;
-    let translateMainHero = 32;
+    let translateMainHero = 64;
     let topMainHero = 0;
 
     const heroBlockSize = 96;
@@ -100,6 +100,7 @@ function windowLoad() {
 
     //для карты переменные
     let tileArray = [];
+    let AllEnemy = [];
     let allObjects = document.createElement("div");
     allObjects.style.cssText = `
         position: absolute;
@@ -109,7 +110,6 @@ function windowLoad() {
         height: 100%;
     `;
     game.appendChild(allObjects);
-    let objectsArray = [];
 
     //Функция для иземенеия состояния персонажа
     function changeAnimate(stateStr) {
@@ -162,26 +162,24 @@ function windowLoad() {
             changeAnimate("stand");
     });
 
-  
+
     //передвижение мира
     function moveWorldRight() {
         allObjects.style.left = Number.parseInt(allObjects.style.left) - speed + "px";
-
-        /* i-=speed;
-        console.log(i);
-        if (i === 0) */
         tileArray.map((elem) => {
             elem[0] = elem[0] - 1 / (32 / speed);
+        });
+        AllEnemy.map((elem) => {
+            elem.moveRight();
         });
     }
     function moveWorldLeft() {
         allObjects.style.left = Number.parseInt(allObjects.style.left) + speed + "px";
-
-       /*  i-=speed;
-        console.log(i);
-        if (i === 0) */
         tileArray.map((elem) => {
             elem[0] = elem[0] + 1 / (32 / speed);
+        });
+        AllEnemy.map((elem) => {
+            elem.moveLeft();
         });
     }
 
@@ -202,7 +200,7 @@ function windowLoad() {
             if (checkAhead()) {
                 /* translateMainHero >= 2000 ? null : translateMainHero += speed;
                 hero.style.left = translateMainHero + "px"; */
-              
+
                 moveWorldRight();
 
                 checkFalling();
@@ -213,7 +211,7 @@ function windowLoad() {
                     changeAnimate("stand");
                 }
             }
-        }, 50);
+        }, 17);
 
     }
     //передвижение влево
@@ -229,19 +227,12 @@ function windowLoad() {
         }, 60);
 
         animationSome = setInterval(() => {
-            if (checkAhead()) {
-                /* hero.style.left = translateMainHero + "px";
-                translateMainHero <= 32 ? null : translateMainHero -= speed; */
-               
+            console.log(Number.parseInt(allObjects.style.left))
+            if (checkAhead() && !isLeftSideBlocked && Number.parseInt(allObjects.style.left) < 0) {
                 moveWorldLeft();
-
                 checkFalling();
                 if (isFalling)
                     changeAnimate("fall");
-
-                if (isLeftSideBlocked) {
-                    changeAnimate("stand");
-                }
             }
         }, 17);
     }
@@ -326,7 +317,7 @@ function windowLoad() {
 
         //передвижение персонажа
         animation = setInterval(() => {
-            topMainHero += 10;
+            topMainHero += speed;
 
             if (!checkSoffit()) {
                 changeAnimate("fall");
@@ -341,11 +332,15 @@ function windowLoad() {
             }
 
             if (direction === "right") {
-                translateMainHero += 10;
-                hero.style.left = translateMainHero + "px";
+                /* translateMainHero += speed;
+                hero.style.left = translateMainHero + "px"; */
+
+                moveWorldRight();
             } else {
-                translateMainHero -= 10;
-                hero.style.left = translateMainHero + "px";
+                /* translateMainHero -= speed;
+                hero.style.left = translateMainHero + "px"; */
+
+                moveWorldLeft();
             }
             hero.style.bottom = topMainHero + "px";
         }, 17);
@@ -363,7 +358,7 @@ function windowLoad() {
 
 
         animation = setInterval(() => {
-            topMainHero -= 3;
+            topMainHero -= speed;
             hero.style.bottom = topMainHero + "px";
             checkFalling();
             if (!isFalling) {
@@ -503,18 +498,19 @@ function windowLoad() {
 
     function start() {
 
+        //!первой строкой можно добавить загрузку, последней ее удаление
+
         lifeCycle();
 
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 100; i++) {
             if (i > 10 && i < 20) continue;
             addTiles(i);
         }
 
         createTilesPlatform(10, 6, 15);
-        createTilesPlatform(20,10, 15);
-        createTilesPlatform(30,14, 15);
+        createTilesPlatform(20, 10, 15);
+        createTilesPlatform(30, 14, 15);
         createTilesPlatform(34, 2, 5);
-        createTilesPlatform(4, 2, 3);
 
         new Enemy(25, 2);
         new Enemy(24, 11);
@@ -570,19 +566,13 @@ function windowLoad() {
 
             this.createEnimy();
 
-            //this.changeAnimate(this.WALK);
-
-            //objectsArray.push(this.block);
+            AllEnemy.push(this);
 
             this.lifeCycle();
-            
+
             this.changeAnimate(this.WALK);
-            /* setInterval(() => {
-                if (this.state === this.STAND)
-                    this.changeAnimate(this.WALK);
-                else if (this.state === this.WALK)
-                    this.changeAnimate(this.STAND);
-            }, 3000); */
+
+            this.updatePositionX();
         }
 
         createEnimy() {
@@ -595,8 +585,7 @@ function windowLoad() {
                 height: ${this.blockSize}px;
                 overflow: hidden;
             `;
-            allObjects.appendChild(this.block);
-
+            game.appendChild(this.block);
             this.img = document.createElement("img");
             this.img.src = "img/characters/enemies/StandDog.svg";
             this.img.style.cssText = `
@@ -638,6 +627,12 @@ function windowLoad() {
                     }
                 }
             }, 17);
+        }
+
+        updatePositionX() {
+            setInterval(() => {
+                this.block.style.left = this.posX * 32 + "px";
+            });
         }
 
         //Проверка столкновения с героем
@@ -835,6 +830,11 @@ function windowLoad() {
             clearInterval(this.timer);
             isLeftSideBlocked = false;
             isRightSideBlocked = false;
+
+            /* allObjects.appendChild(this.block);
+            AllEnemy = AllEnemy.filter(item => item !== this); */
+            
+
         }
 
         hurtAnimate() {
@@ -878,6 +878,16 @@ function windowLoad() {
             setTimeout(() => {
                 element.parentNode.removeChild(element);
             }, 1000);
+        }
+
+        //для смены координат при движении камеры
+        moveRight() {
+            this.startX -= 1 / (32 / speed);
+            this.posX -= 1 / (32 / speed);
+        }
+        moveLeft() {
+            this.startX += 1 / (32 / speed);
+            this.posX += 1 / (32 / speed);
         }
     }
 
