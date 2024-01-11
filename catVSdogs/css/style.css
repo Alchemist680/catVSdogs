@@ -329,7 +329,7 @@ body.lock {
       -ms-transform: scale(1);
           transform: scale(1);
   bottom: 64px;
-  left: 64px;
+  left: 200px;
   position: absolute;
   z-index: 100;
 }

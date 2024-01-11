@@ -70,7 +70,7 @@ function windowLoad() {
             const popupName = statusGame;
             const popup = document.querySelector(`[data-custom-popup="${popupName}"]`);
             if (popup) {
-                
+
                 if (timer && statusGame === 'default') {
                     timer.stopTimer();
                     statusGame = 'pause';
@@ -98,7 +98,6 @@ function windowLoad() {
     let victoryLodge;
     let isGameNotOver = true;
     let isUserStartGame = false;
-    let lifeCycleTimer;
 
     class Heart {
         img;
@@ -159,6 +158,10 @@ function windowLoad() {
     //Картинка главного персонажа
     const heroImg = document.querySelector("#mainHeroes");
 
+    let fish;
+
+    let arrayEnemies = [];
+
     let lives = 8;
     let maxLives = lives;
 
@@ -181,6 +184,7 @@ function windowLoad() {
     let animation;
     let animationSome;
     let animateWasChanged = true;
+    let lifeCycleTimer;
 
     let heroX = Math.ceil(Number.parseInt(getComputedStyle(hero).left) / 32);
     let heroY = Math.ceil(Number.parseInt(getComputedStyle(hero).bottom) / 32);
@@ -297,7 +301,7 @@ function windowLoad() {
                     if (header) {
                         header.style.paddingRight = lockPaddingValue;
                     }
-    
+
                     e.preventDefault();
                 }
             }
@@ -414,6 +418,9 @@ function windowLoad() {
                     heroImg.style.left = leftPosMainHero + "px";
                 }
             }, 150);
+            setTimeout(() => {
+                fish = new Fish();
+            }, 150 * 4);
 
         } else {
             heroImg.style.transform = "scale(-1, 1)";
@@ -428,11 +435,85 @@ function windowLoad() {
                     heroImg.style.left = leftPosMainHero + "px";
                 }
             }, 150);
+            setTimeout(() => {
+                fish = new Fish();
+            }, 150 * 4);
         }
 
 
 
     }
+    class Fish {
+        x = heroX + 1;
+        fishXPos = this.x * 32;
+        flightDistance = 300;
+        y = heroY;
+        animation;
+        fish;
+        blockSize = 75;
+        constructor() {
+            this.createFish();
+            this.animateFish();
+        }
+
+        createFish() {
+            this.fish = document.createElement("div");
+            const image = document.createElement("img");
+
+            this.fish.style.cssText = `
+                position: absolute;
+                left: ${this.x * 32}px;
+                bottom: ${this.y * 32}px;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+                overflow: hidden;
+            `;
+            game.appendChild(this.fish);
+
+            image.src = "img/fish.png";
+            image.style.cssText = `
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+            `;
+            if (direction === 'left') {
+                image.style.transform = "scale(-1, 1)";
+            }
+            this.fish.appendChild(image);
+        }
+
+        animateFish() {
+            const startPosXFish = this.fishXPos;
+
+            if (direction === 'right') {
+                this.animation = setInterval(() => {
+                    this.fishXPos += speed * 1.5;
+                    this.fish.style.left = this.fishXPos + "px";
+                    if (this.fishXPos > startPosXFish + this.flightDistance || checkFishToEnemy(this.fishXPos)) {
+                        clearInterval(this.animation);
+                        this.fish.parentNode.removeChild(this.fish);
+                        delete this;
+                    }
+                }, 17);
+            } else {
+                this.animation = setInterval(() => {
+                    this.fishXPos -= speed * 1.5;
+                    this.fish.style.left = this.fishXPos + "px";
+                    if (this.fishXPos < startPosXFish - this.flightDistance || checkFishToEnemy(this.fishXPos)) {
+                        clearInterval(this.animation);
+                        this.fish.parentNode.removeChild(this.fish);
+                        delete this;
+                    }
+                }, 17);
+            }
+
+
+
+        }
+    }
+
     //Прыжок
     function jumpHandler() {
         topMainHero = heroY * 32;
@@ -448,19 +529,19 @@ function windowLoad() {
         }
         else {
             heroImg.style.left = -heroBlockSize * MaxBlocksXHero + "px";
-            leftPosMainHero = -heroBlockSize * MaxBlocksXHero;
+            leftPosMainHero = -heroBlockSize * (MaxBlocksXHero - 1);
             heroImg.style.transform = "scale(-1, 1)";
         }
 
         animationSome = setInterval(() => {
             if (direction === "right") {
-                leftPosMainHero <= -heroBlockSize * 4 ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
+                leftPosMainHero <= -heroBlockSize * 3 ? leftPosMainHero = 0 : leftPosMainHero -= heroBlockSize;
             } else {
-                leftPosMainHero >= -(MaxBlocksXHero - heroBlockSize * 4) ? leftPosMainHero = -heroBlockSize * MaxBlocksXHero : leftPosMainHero += heroBlockSize;
+                leftPosMainHero >= -(MaxBlocksXHero - heroBlockSize * 3) ? leftPosMainHero = -heroBlockSize * MaxBlocksXHero : leftPosMainHero += heroBlockSize;
             }
 
             heroImg.style.left = leftPosMainHero + "px";
-        }, heightJump / 10 * 17 / 4);
+        }, heightJump / 10 * 17 / 3);
 
         //передвижение персонажа
         animation = setInterval(() => {
@@ -475,7 +556,12 @@ function windowLoad() {
                 if (isFalling) {
                     changeAnimate("fall");
                 }
-                else changeAnimate("stand");
+                else {
+                    hero.style.bottom = `${heroY * 32}px`;
+                    changeAnimate("stand");
+                }
+            } else {
+                hero.style.bottom = topMainHero + "px";
             }
 
             if (direction === "right") {
@@ -489,7 +575,7 @@ function windowLoad() {
 
                 moveWorldLeft();
             }
-            hero.style.bottom = topMainHero + "px";
+
         }, 17);
     }
     function fallHandler() {
@@ -617,9 +703,6 @@ function windowLoad() {
         heroY = Math.ceil(Number.parseInt(getComputedStyle(hero).bottom) / 32);
     }
 
-    //есть ли впереди персонажа стена
-    //let isAheadOfThwWall = false;
-
     //проверка должен ли персонаж падать
     function checkFalling() {
         updateHeroY();
@@ -633,7 +716,7 @@ function windowLoad() {
             if (Math.ceil(tileArray[i][0]) === heroX && Math.ceil(tileArray[i][1]) + 1 === heroY) {
                 isFalling = false;
                 break;
-            } else if (Math.ceil(tileArray[i][0]) === heroX + 2 && Math.ceil(tileArray[i][1]) + 1 === heroY) {
+            } else if (Math.ceil(tileArray[i][0]) === heroX + 3 && Math.ceil(tileArray[i][1]) + 1 === heroY) {
                 isFalling = false;
                 break;
             }
@@ -650,25 +733,51 @@ function windowLoad() {
             }
         } else {
             for (let i = 0; i < tileArray.length; i++) {
-                if (Math.ceil(tileArray[i][0]) === heroX - 1 && Math.ceil(tileArray[i][1]) + 1 === heroY + 1) {
+                if (Math.ceil(tileArray[i][0]) === heroX && Math.ceil(tileArray[i][1]) + 1 === heroY + 1) {
                     return false;
                 }
             }
         }
         return true;
     }
+    //проверка задевает ли рыба монстра
+    function checkFishToEnemy(FishX) {
+        updateHeroY();
+        FishX = Math.ceil(FishX / 32);
+        let isTrue = false;
+
+        arrayEnemies.forEach(Enemy => {
+            if (Enemy.state != Enemy.DEATH) {
+                if (Math.ceil(Enemy.posX) === FishX && Math.ceil(Enemy.posY) === heroY) {
+                    console.log(Enemy.lives)
+                    if (Enemy.lives <= 1) {
+                        Enemy.changeAnimate(Enemy.DEATH);
+                    } else {
+                        Enemy.changeAnimate(Enemy.HURT);
+                        Enemy.showHurt();
+                        Enemy.lives--;
+                    }
+                    isTrue = true;
+                    return true;
+                }
+            }
+        });
+        if (isTrue)
+            return true;
+        else return false;
+    }
     //проверка может ли персонаж лететь вверх (есть ли потолок потолок)
     function checkSoffit() {
         updateHeroY();
         if (direction === "right") {
             for (let i = 0; i < tileArray.length; i++) {
-                if (Math.ceil(tileArray[i][0]) === heroX + 1 && Math.ceil(tileArray[i][1]) + 1 === heroY + 2) {
+                if (Math.ceil(tileArray[i][0]) === heroX + 2 && Math.ceil(tileArray[i][1]) + 1 === heroY + 2) {
                     return false;
                 }
             }
         } else {
             for (let i = 0; i < tileArray.length; i++) {
-                if (Math.ceil(tileArray[i][0]) === heroX && Math.ceil(tileArray[i][1]) + 1 === heroY + 2) {
+                if (Math.ceil(tileArray[i][0]) === heroX + 1 && Math.ceil(tileArray[i][1]) + 1 === heroY + 2) {
                     return false;
                 }
             }
@@ -700,17 +809,21 @@ function windowLoad() {
         lifeCycle();
 
         for (let i = 0; i < 100; i++) {
-            if (i > 10 && i < 20) continue;
+            //if (i > 10 && i < 20) continue;
             addTiles(i);
         }
 
-        createTilesPlatform(10, 6, 15);
+        createTilesPlatform(15, 6, 15);
         createTilesPlatform(20, 10, 15);
         createTilesPlatform(30, 14, 15);
         createTilesPlatform(34, 2, 5);
 
+        new generateDecor('tree', 10, 7);
+        new generateDecor('fountain', 15, 7);
+
         //new Enemy(25, 2);
-        new Enemy(24, 11);
+        arrayEnemies.push(new Enemy(24, 11));
+        arrayEnemies.push(new Enemy(24, 2));
 
         victoryLodge = new VictoryLodge(25, 2);
         victoryLodge.checkWin();
@@ -843,14 +956,15 @@ function windowLoad() {
                     isRightSideBlocked = true;
                     isLeftSideBlocked = false;
                     if (state === "hit" && this.state != this.HURT && !this.isHurt) {
-                        this.isHurt = true;
+                        //! убрал получение урона при ситуации, когда герой и монстр столкнулись и герой атакует, так как это делается на рыбе
+                        /* this.isHurt = true; */
                         //получение урона делаем только через время, так как сначала дожна пройти анимация атаки кота,
                         //иначе будет многократное получение урона
-                        setTimeout(() => {
+                        /* setTimeout(() => {
                             this.changeAnimate(this.HURT);
                             this.showHurt();
                             this.lives--;
-                        }, 600);
+                        }, 600); */
                     } else if (!this.attack) {
                         this.changeAnimate(this.ATTACK);
                     }
@@ -858,14 +972,15 @@ function windowLoad() {
                     isLeftSideBlocked = true;
                     isRightSideBlocked = false;
                     if (state === "hit" && this.state != this.HURT && !this.isHurt) {
-                        this.isHurt = true;
+                        //! убрал получение урона при ситуации, когда герой и монстр столкнулись и герой атакует, так как это делается на рыбе
+                        /* this.isHurt = true; */
                         //получение урона делаем только через время, так как сначала дожна пройти анимация атаки кота,
                         //иначе будет многократное получение урона
-                        setTimeout(() => {
+                        /* setTimeout(() => {
                             this.changeAnimate(this.HURT);
                             this.showHurt();
                             this.lives--;
-                        }, 600);
+                        }, 600); */
                     } else if (!this.attack) {
                         this.changeAnimate(this.ATTACK);
                     }
@@ -1152,7 +1267,7 @@ function windowLoad() {
         block;
 
         img;
-        imgSrc = "/img/VictoryLodge.png";
+        imgSrc = "img/VictoryLodge.png";
         spritePosX = 0;
         blockSize = 250;
         spriteMaxPosX = 7;
@@ -1173,14 +1288,14 @@ function windowLoad() {
 
         checkWin() {
             let checkWinTimer = setInterval(() => {
-                let currentPosX = Math.ceil(Number.parseInt(getComputedStyle(allObjects).left) / 32 + this.winPosX - heroX);
+                let currentPosX = Math.ceil(Number.parseInt(getComputedStyle(allObjects).left) / 32 + this.winPosX - heroX / 2);
                 if (currentPosX === heroX && this.posY === heroY) {
                     gameOver("win");
                     statusGame = "win";
                     clearInterval(checkWinTimer);
                 }
 
-            }, 100);
+            }, 50);
         }
 
         create() {
@@ -1256,7 +1371,7 @@ function windowLoad() {
             const starsElement = document.querySelector("#stars");
             for (let index = 0; index < starsLenght; index++) {
                 const star = document.createElement('img');
-                star.src = "/img/icons/star.png";
+                star.src = "img/icons/star.png";
                 star.alt = "star";
                 starsElement.appendChild(star);
             }
@@ -1264,6 +1379,63 @@ function windowLoad() {
 
         } else {
             document.querySelector("[data-custom-popup='loss']").classList.add("open");
+        }
+    }
+
+    class generateDecor {
+        nameDecor;
+        src = 'img/decors/';
+        x;
+        y;
+        blockSize;
+
+        constructor(name, x, y) {
+            this.nameDecor = name;
+            this.x = x;
+            this.y = y;
+
+            this.definitionOfDecoration();
+
+            this.createDecor();
+        }
+        definitionOfDecoration() {
+            switch (this.nameDecor) {
+                case "tree":
+                    this.blockSize = 100;
+                    this.src += "tree.png";
+                    break;
+                case "fountain":
+                    this.blockSize = 70;
+                    this.src += "fountain.png";
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        createDecor() {
+            const decor = document.createElement("div");
+            const image = document.createElement("img");
+
+            decor.style.cssText = `
+                position: absolute;
+                left: ${this.x * 32}px;
+                bottom: ${this.y * 32}px;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+                overflow: hidden;
+            `;
+            allObjects.appendChild(decor);
+
+            image.src = this.src;
+            image.style.cssText = `
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+            `;
+            decor.appendChild(image);
         }
     }
 
