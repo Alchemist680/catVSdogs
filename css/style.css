@@ -170,6 +170,17 @@ body.lock {
           flex-direction: column;
 }
 
+.wrapper.error::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #313131;
+  z-index: 100;
+}
+
 .page {
   -webkit-box-flex: 1;
       -ms-flex: 1 1 auto;
@@ -329,7 +340,7 @@ body.lock {
       -ms-transform: scale(1);
           transform: scale(1);
   bottom: 64px;
-  left: 200px;
+  left: 220px;
   position: absolute;
   z-index: 100;
 }
@@ -356,6 +367,7 @@ body.lock {
 
 .game__settings {
   right: 16px;
+  z-index: 200;
   top: 16px;
   cursor: pointer;
   position: absolute;
@@ -364,7 +376,6 @@ body.lock {
   transition: transform 0.3s ease;
   transition: transform 0.3s ease, -webkit-transform 0.3s ease;
   background-color: transparent;
-  z-index: 10;
 }
 
 .game__settings:focus {

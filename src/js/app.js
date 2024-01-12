@@ -749,7 +749,6 @@ function windowLoad() {
         arrayEnemies.forEach(Enemy => {
             if (Enemy.state != Enemy.DEATH) {
                 if (Math.ceil(Enemy.posX) === FishX && Math.ceil(Enemy.posY) === heroY) {
-                    console.log(Enemy.lives)
                     if (Enemy.lives <= 1) {
                         Enemy.changeAnimate(Enemy.DEATH);
                     } else {
@@ -808,29 +807,7 @@ function windowLoad() {
 
         lifeCycle();
 
-        for (let i = 0; i < 100; i++) {
-            //if (i > 10 && i < 20) continue;
-            addTiles(i);
-        }
-
-        createTilesPlatform(15, 6, 15);
-        createTilesPlatform(20, 10, 15);
-        createTilesPlatform(30, 14, 15);
-        createTilesPlatform(34, 2, 5);
-
-        new generateDecor('tree', 10, 7);
-        new generateDecor('fountain', 15, 7);
-
-        //new Enemy(25, 2);
-        arrayEnemies.push(new Enemy(24, 11));
-        arrayEnemies.push(new Enemy(24, 2));
-
-        victoryLodge = new VictoryLodge(25, 2);
-        victoryLodge.checkWin();
-
-        for (let index = 0.5; index < lives + 0.5; index++) {
-            hearts.generateHearts(index, 0.5);
-        }
+        new generateMap();
 
     }
 
@@ -1359,7 +1336,6 @@ function windowLoad() {
             }, victoryLodge.timeInterval * (victoryLodge.spriteMaxPosX - 1) * 2);
 
             //Подсчет звезд
-            console.log(lives, maxLives);
             const ratio = lives / maxLives;
             let starsLenght;
             if (ratio <= .33)
@@ -1437,6 +1413,114 @@ function windowLoad() {
             `;
             decor.appendChild(image);
         }
+    }
+
+    const levels = {
+        "1": {
+            'lives': 4,
+            'mapLenght': 50,
+            'platforms': {
+                1: { x: 10, y: 6, length: 10 },
+            },
+            'decors': {
+                1: { name: 'tree', x: 10, y: 10 },
+                2: { name: 'fountain', x: 10, y: 10 },
+            },
+            'enemies': {
+                1: { x: 10, y: 10 },
+                2: { x: 10, y: 10 },
+            },
+            'victoryLodge': {
+                x: 10, y: 2
+            },
+            'abysses': {
+                //1: { x1: 10, x2: 20 },
+                2: { x1: 25, x2: 30 },
+            }
+        },
+        "2": {
+            'lives': 4,
+            'mapLenght': 50,
+            'platforms': {
+                1: { x: 10, y: 6, length: 10 },
+            },
+            'decors': {
+                1: { name: 'tree', x: 10, y: 10 },
+                2: { name: 'fountain', x: 10, y: 10 },
+            },
+            'enemies': {
+                1: { x: 10, y: 10 },
+                2: { x: 10, y: 10 },
+            },
+            'victoryLodge': {
+                x: 10, y: 2
+            },
+            'abysses': {
+                //1: { x1: 10, x2: 20 },
+                2: { x1: 25, x2: 30 },
+            }
+        },
+
+    };
+
+    class generateMap {
+
+        constructor() {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const levelNum = urlParams.get('level');
+            if (levelNum && levelNum in levels) {
+
+                const level = levels[levelNum];
+
+                //жизни
+                lives = level.lives;
+                maxLives = lives;
+                for (let index = 0.5; index < lives + 0.5; index++) {
+                    hearts.generateHearts(index, 0.5);
+                }
+
+                //платформы
+                Object.values(level.platforms).forEach((platform) => {
+                    createTilesPlatform(platform.x, platform.y, platform.length);
+                });
+
+                //Платформа основная с промежностями
+                let isAbyss = false;
+                for (let i = 0; i < level.mapLenght; i++) {
+                    //if (i > 10 && i < 20) continue;
+                    isAbyss = false;
+                    Object.values(level.abysses).forEach((abyss) => {
+                        if (i > abyss.x1 && i < abyss.x2) {
+                            isAbyss = true;
+                            return;
+                        }
+                    });
+                    if (isAbyss) continue;
+                    addTiles(i);
+                }
+
+                //Декорации
+                Object.values(level.decors).forEach((decor) => {
+                    new generateDecor(decor.name, decor.x, decor.y);
+                });
+
+                //Монстры
+                Object.values(level.enemies).forEach((enemy) => {
+                    arrayEnemies.push(new Enemy(enemy.x, enemy.y));
+                });
+
+                //Победный дом
+                victoryLodge = new VictoryLodge(level.victoryLodge.x, level.victoryLodge.y);
+                victoryLodge.checkWin();
+
+            } else {
+                document.querySelector("[data-custom-popup='404']").classList.add("open");
+                statusGame = '404';
+                document.querySelector(".wrapper").classList.add("error");
+            }
+        }
+
     }
 
     start();

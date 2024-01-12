@@ -58,6 +58,18 @@ body{
     overflow: clip;
     display: flex;
     flex-direction: column;
+    &.error {
+        &::after{
+            content:'';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #313131;
+            z-index: 100;
+        }
+    }
 }
 .page{
     flex: 1 1 auto;
@@ -192,7 +204,7 @@ body{
         overflow: hidden;
         transform: scale(1);
         bottom: 64px;
-        left: 200px;
+        left: 220px;
         position: absolute;
         z-index: 100;
         img{
@@ -214,12 +226,12 @@ body{
     }
     &__settings{
         right: 16px;
+        z-index: 200;
         top: 16px;
         cursor: pointer;
         position: absolute;
         transition: transform 0.3s ease;
         background-color: transparent;
-        z-index: 10;
         &:focus {
             transform: scale(1.1);
         }
