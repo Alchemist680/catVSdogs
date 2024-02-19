@@ -127,8 +127,21 @@ body{
 /*=============================================================================================================*/
 @import "header";
 /*=============================================================================================================*/
+@keyframes buffScaling {
+    0% {
+        transform: scale(0.85);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+.buff {
+    animation: buffScaling .4s ease-in infinite alternate;
+}
 .levels {
-    flex: 1 1 auto;
+    padding-top: rem(40);
+    padding-bottom: rem(40);
+    flex: 0 1 auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -138,12 +151,24 @@ body{
         gap: rem(20);
     }
 
+    &__back{
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
     &__item {
         border-radius: rem(5);
         position: relative;
         overflow: hidden;
-        padding-bottom: 100%;
-        display: block;
+        min-height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
         border: rem(3) solid #b05200;
         box-shadow: 0 0 rem(10) #ffffff7c;
 
@@ -168,24 +193,28 @@ body{
             background: rgba(0, 0, 0, 0.4);
         }
         img{
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+         
         }
     }
 
     &__numb{
         color: #fff;
-        position: absolute;
-        top: 50%;
+        position: relative;
         z-index: 10;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        text-align: center;
         font-weight: 700;
         @include adaptiv-value('font-size', 60, 45, 1);
+    }
+    &__raiting{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        z-index: 10;
+        position: relative;
+        img {
+            flex: 0 0 50px;
+            width: 50px;
+        }
     }
 }
 

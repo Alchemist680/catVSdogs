@@ -99,6 +99,7 @@ function windowLoad() {
     let isGameNotOver = true;
     let isUserStartGame = false;
 
+    //жизни в левом верхнем углу
     class Heart {
         img;
         x;
@@ -136,6 +137,7 @@ function windowLoad() {
     const hearts = new Heart();
     function killHeart() {
         const allHearts = document.querySelectorAll("#heart.active");
+        lives--;
         if (allHearts.length) {
             const currentHeart = allHearts[allHearts.length - 1];
             currentHeart.classList.remove("active");
@@ -152,13 +154,32 @@ function windowLoad() {
             }, 100);
         }
     }
+    function addHeart() {
+        lives++;
+        const allHearts = document.querySelectorAll("#heart");
+        console.log(allHearts);
+        if (allHearts.length) {
+            const currentHeart = allHearts[allHearts.length - 1];
+            console.log(currentHeart);
+            currentHeart.classList.add("active");
+            const img = currentHeart.querySelector("img");
+            let posXSprite = 3;
+
+            const animationHeart = setInterval(() => {
+                if (posXSprite >= 0) {
+                    img.style.left = -posXSprite * 32 + "px";
+                    posXSprite--;
+                } else {
+                    clearInterval(animationHeart);
+                }
+            }, 100);
+        }
+    }
 
     //Главный персонаж
     const hero = document.querySelector("#hero");
     //Картинка главного персонажа
     const heroImg = document.querySelector("#mainHeroes");
-
-    let fish;
 
     let arrayEnemies = [];
 
@@ -614,7 +635,7 @@ function windowLoad() {
         }
 
         killHeart();
-        lives--;
+       
 
         setTimeout(() => {
             if (lives <= 0)
@@ -804,9 +825,8 @@ function windowLoad() {
     function start() {
 
         //!первой строкой можно добавить загрузку, последней ее удаление
-
         lifeCycle();
-
+        
         new generateMap();
 
     }
@@ -1338,9 +1358,9 @@ function windowLoad() {
             //Подсчет звезд
             const ratio = lives / maxLives;
             let starsLenght;
-            if (ratio <= .33)
+            if (ratio <= .35)
                 starsLenght = 1;
-            else if (ratio <= .66)
+            else if (ratio <= .7)
                 starsLenght = 2;
             else starsLenght = 3;
 
@@ -1352,6 +1372,21 @@ function windowLoad() {
                 starsElement.appendChild(star);
             }
 
+            //сохранение рейтинга
+            const localObj = localStorage.getItem("starsRaitingUser");
+            const urlParams = new URLSearchParams(window.location.search);
+            const levelNum = parseInt(urlParams.get('level'));
+            if (localObj) {
+                const existingObject = JSON.parse(localObj);
+                const keyToAccess = 'l' + levelNum;
+                existingObject[keyToAccess] = starsLenght;
+                localStorage.setItem('starsRaitingUser', JSON.stringify(existingObject));
+            } else {
+                const existingObject = {}
+                const keyToAccess = 'l' + levelNum;
+                existingObject[keyToAccess] = starsLenght;
+                localStorage.setItem('starsRaitingUser', JSON.stringify(existingObject));
+            }
 
         } else {
             document.querySelector("[data-custom-popup='loss']").classList.add("open");
@@ -1377,11 +1412,11 @@ function windowLoad() {
         definitionOfDecoration() {
             switch (this.nameDecor) {
                 case "tree":
-                    this.blockSize = 100;
+                    this.blockSize = 150;
                     this.src += "tree.png";
                     break;
                 case "fountain":
-                    this.blockSize = 70;
+                    this.blockSize = 100;
                     this.src += "fountain.png";
                     break;
 
@@ -1415,54 +1450,416 @@ function windowLoad() {
         }
     }
 
+
     const levels = {
         "1": {
-            'lives': 4,
-            'mapLenght': 50,
-            'platforms': {
-                1: { x: 10, y: 6, length: 10 },
+            "lives": 3,
+            "mapLenght": 50,
+            "platforms": {
+                "1": {
+                    "x": 13,
+                    "y": 6,
+                    "length": 10
+                }
             },
-            'decors': {
-                1: { name: 'tree', x: 10, y: 10 },
-                2: { name: 'fountain', x: 10, y: 10 },
+            "buffs": {
+
             },
-            'enemies': {
-                1: { x: 10, y: 10 },
-                2: { x: 10, y: 10 },
+            "decors": {
+                "1": {
+                    "name": "tree",
+                    "x": 17,
+                    "y": 7
+                },
+                "2": {
+                    "name": "fountain",
+                    "x": 10,
+                    "y": 2
+                },
+                "3": {
+                    "name": "fountain",
+                    "x": 34,
+                    "y": 2
+                }
             },
-            'victoryLodge': {
-                x: 10, y: 2
+            "enemies": {
+                "1": {
+                    "x": 35,
+                    "y": 2
+                }
             },
-            'abysses': {
-                //1: { x1: 10, x2: 20 },
-                2: { x1: 25, x2: 30 },
+            "victoryLodge": {
+                "x": 40,
+                "y": 2
+            },
+            "abysses": {
+                "2": {
+                    "x1": 25,
+                    "x2": 30
+                }
             }
         },
+
         "2": {
-            'lives': 4,
-            'mapLenght': 50,
-            'platforms': {
-                1: { x: 10, y: 6, length: 10 },
+            "lives": 3,
+            "mapLenght": 100,
+            "platforms": {
+                "1": {
+                    "x": 15,
+                    "y": 5,
+                    "length": 9
+                },
+                "2": {
+                    "x": 25,
+                    "y": 8,
+                    "length": 5
+                },
+                "3": {
+                    "x": 105,
+                    "y": 5,
+                    "length": 6
+                }
             },
-            'decors': {
-                1: { name: 'tree', x: 10, y: 10 },
-                2: { name: 'fountain', x: 10, y: 10 },
+            "buffs": {
             },
-            'enemies': {
-                1: { x: 10, y: 10 },
-                2: { x: 10, y: 10 },
+            "decors": {
+                "1": {
+                    "name": "tree",
+                    "x": 40,
+                    "y": 2
+                },
+                "2": {
+                    "name": "tree",
+                    "x": 25,
+                    "y": 9
+                },
+                "3": {
+                    "name": "tree",
+                    "x": 70,
+                    "y": 2
+                },
+                "4": {
+                    "name": "tree",
+                    "x": 77,
+                    "y": 2
+                },
+                "5": {
+                    "name": "tree",
+                    "x": 85,
+                    "y": 2
+                },
+
+                "6": {
+                    "name": "tree",
+                    "x": 90,
+                    "y": 2
+                },
+                "1.1": {
+                    "name": "fountain",
+                    "x": 15,
+                    "y": 6
+                },
+                "1.2": {
+                    "name": "fountain",
+                    "x": 34,
+                    "y": 2
+                },
+                "1.3": {
+                    "name": "fountain",
+                    "x": 65,
+                    "y": 2
+                },
+                "1.4": {
+                    "name": "fountain",
+                    "x": 47,
+                    "y": 2
+                },
+                "1.5": {
+                    "name": "fountain",
+                    "x": 56,
+                    "y": 2
+                }
             },
-            'victoryLodge': {
-                x: 10, y: 2
+            "enemies": {
+                "1": {
+                    "x": 34,
+                    "y": 2
+                },
+                "2": {
+                    "x": 15,
+                    "y": 6
+                },
+                "3": {
+                    "x": 70,
+                    "y": 2
+                },
+                "4": {
+                    "x": 80,
+                    "y": 2
+                }
+
             },
-            'abysses': {
-                //1: { x1: 10, x2: 20 },
-                2: { x1: 25, x2: 30 },
+            "victoryLodge": {
+                "x": 105,
+                "y": 6
+            },
+            "abysses": {
+                "1": {
+                    "x1": 10,
+                    "x2": 34
+                },
+                "2": {
+                    "x1": 50,
+                    "x2": 55
+                },
+                "3": {
+                    "x1": 60,
+                    "x2": 65
+                }
+
+            }
+        },
+        "3": {
+            "lives": 4,
+            "mapLenght": 150,
+            "platforms": {
+                "1": {
+                    "x": 10,
+                    "y": 6,
+                    "length": 10
+                }
+            },
+            "decors": {
+                "1": {
+                    "name": "tree",
+                    "x": 10,
+                    "y": 10
+                },
+                "2": {
+                    "name": "fountain",
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            "buffs": {
+                "1": {
+                    "name": "heart",
+                    "x": 10,
+                    "y": 2
+                }
+            },
+            "enemies": {
+                "1": {
+                    "x": 35,
+                    "y": 2
+                }
+            },
+            "victoryLodge": {
+                "x": 10,
+                "y": 2
+            },
+            "abysses": {
+                "2": {
+                    "x1": 25,
+                    "x2": 30
+                }
+            }
+        },
+        "4": {
+            "lives": 4,
+            "mapLenght": 50,
+            "platforms": {
+                "1": {
+                    "x": 10,
+                    "y": 6,
+                    "length": 10
+                }
+            },
+            "decors": {
+                "1": {
+                    "name": "tree",
+                    "x": 10,
+                    "y": 10
+                },
+                "2": {
+                    "name": "fountain",
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            "buffs": {
+                "1": {
+                    "name": "heart",
+                    "x": 10,
+                    "y": 2
+                }
+            },
+            "enemies": {
+                "1": {
+                    "x": 35,
+                    "y": 2
+                }
+            },
+            "victoryLodge": {
+                "x": 10,
+                "y": 2
+            },
+            "abysses": {
+                "2": {
+                    "x1": 25,
+                    "x2": 30
+                }
+            }
+        },
+        "5": {
+            "lives": 4,
+            "mapLenght": 50,
+            "platforms": {
+                "1": {
+                    "x": 10,
+                    "y": 6,
+                    "length": 10
+                }
+            },
+            "decors": {
+                "1": {
+                    "name": "tree",
+                    "x": 10,
+                    "y": 10
+                },
+                "2": {
+                    "name": "fountain",
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            "buffs": {
+                "1": {
+                    "name": "heart",
+                    "x": 10,
+                    "y": 2
+                }
+            },
+            "enemies": {
+                "1": {
+                    "x": 35,
+                    "y": 2
+                }
+            },
+            "victoryLodge": {
+                "x": 10,
+                "y": 2
+            },
+            "abysses": {
+                "2": {
+                    "x1": 25,
+                    "x2": 30
+                }
             }
         },
 
-    };
+    }
+    class Buff {
+        nameBuff;
+        src = 'img/buffs/';
+        x;
+        y;
+        blockSize;
+        decor;
+        text;
+        checkCollideTimer;
 
+        constructor(name, x, y) {
+            this.nameBuff = name;
+            this.x = x;
+            this.y = y;
+
+            this.definitionOfDecoration();
+
+            this.createDecor();
+            this.checkCollideTimer = setInterval(() => {
+                this.checkCollide()
+            }, 100);
+        }
+        definitionOfDecoration() {
+            switch (this.nameBuff) {
+                case "heart":
+                    this.blockSize = 45;
+                    this.src += "heart.png";
+                    this.text = "+1";
+                    break;
+                /* case "fountain":
+                    this.blockSize = 100;
+                    this.src += "fountain.png";
+                    break; */
+
+                default:
+                    break;
+            }
+        }
+        createDecor() {
+            this.decor = document.createElement("div");
+            const image = document.createElement("img");
+            this.decor.classList.add("buff");
+
+            this.decor.style.cssText = `
+                position: absolute;
+                left: ${this.x * 32}px;
+                bottom: ${this.y * 32}px;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+                overflow: hidden;
+                z-index: 3;
+            `;
+            allObjects.appendChild(this.decor);
+
+            image.src = this.src;
+            image.alt = "buff";
+            image.style.cssText = `
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: ${this.blockSize}px;
+                height: ${this.blockSize}px;
+            `;
+            this.decor.appendChild(image);
+        }
+        checkCollide() {
+            const coordX = parseInt(this.decor.style.left) / 32 - -parseInt(allObjects.style.left) / 32 - heroX - 2;
+            if ((coordX > -1 && coordX < 1) && this.y === heroY) {
+                this.deathBuff();
+            }
+        }
+        deathBuff() {
+            this.decor.querySelector('img').style.cssText = "transform: scale(0);";
+            console.log(1);
+            clearInterval(this.checkCollideTimer);
+
+            this.showText();
+            
+            if (this.nameBuff === "heart") {
+                addHeart();
+            }
+        }
+        showText() {
+            const element = document.createElement("p");
+            element.innerText = this.text;
+            element.style.cssText = `
+                color: red;
+                font-weight: 700;
+                font-size: 30px;
+                text-shadow: 1px 1px 2px #000;
+                position: absolute;
+                animation: showHurt 1s ease;
+                left: ${Number.parseInt(this.decor.style.left) - 32 * 7}px;
+                bottom: ${Number.parseInt(this.decor.style.bottom + 32)}px;
+            `;
+            game.appendChild(element);
+            setTimeout(() => {
+                element.parentNode.removeChild(element);
+            }, 1000);
+        }
+    }
     class generateMap {
 
         constructor() {
@@ -1503,6 +1900,11 @@ function windowLoad() {
                 //Декорации
                 Object.values(level.decors).forEach((decor) => {
                     new generateDecor(decor.name, decor.x, decor.y);
+                });
+
+                //Бафы
+                Object.values(level.buffs).forEach((buff) => {
+                    new Buff(buff.name, buff.x, buff.y);
                 });
 
                 //Монстры
