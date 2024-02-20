@@ -3,7 +3,8 @@
 window.addEventListener("load", windowLoad);
 function windowLoad() {
 
-
+    const audio = new Audio('audio/main2.mp3');
+    audio.play();
     let timer;
     let statusGame = 'default';
 
@@ -91,7 +92,10 @@ function windowLoad() {
             }
         }
 
-
+        //Воспроизведение аудиофайла
+        if (targetElement.closest(".levels__item")) {
+            audio.play();
+        }
     }
 
     const game = document.querySelector("#game");
@@ -119,6 +123,7 @@ function windowLoad() {
                 overflow: hidden;
                 top: ${y * 32}px;
                 left: ${x * 32}px;
+                z-index: 600;
             `;
             this.img = document.createElement('img');
             this.img.src = this.src;
@@ -440,7 +445,7 @@ function windowLoad() {
                 }
             }, 150);
             setTimeout(() => {
-                fish = new Fish();
+                const fish = new Fish();
             }, 150 * 4);
 
         } else {
@@ -457,7 +462,7 @@ function windowLoad() {
                 }
             }, 150);
             setTimeout(() => {
-                fish = new Fish();
+                const fish = new Fish();
             }, 150 * 4);
         }
 
@@ -471,7 +476,7 @@ function windowLoad() {
         y = heroY;
         animation;
         fish;
-        blockSize = 75;
+        blockSize = 55;
         constructor() {
             this.createFish();
             this.animateFish();
@@ -635,7 +640,7 @@ function windowLoad() {
         }
 
         killHeart();
-       
+
 
         setTimeout(() => {
             if (lives <= 0)
@@ -737,7 +742,7 @@ function windowLoad() {
             if (Math.ceil(tileArray[i][0]) === heroX && Math.ceil(tileArray[i][1]) + 1 === heroY) {
                 isFalling = false;
                 break;
-            } else if (Math.ceil(tileArray[i][0]) === heroX + 3 && Math.ceil(tileArray[i][1]) + 1 === heroY) {
+            } else if (Math.ceil(tileArray[i][0]) === heroX + 2 && Math.ceil(tileArray[i][1]) + 1 === heroY) {
                 isFalling = false;
                 break;
             }
@@ -826,9 +831,11 @@ function windowLoad() {
 
         //!первой строкой можно добавить загрузку, последней ее удаление
         lifeCycle();
-        
-        new generateMap();
 
+        new generateMap();
+        document.querySelector(".wrapper").classList.add("loaded");
+        const audio = new Audio('audio/main2.mp3');
+        audio.play();
     }
 
     //Класс для генерации врага
@@ -1419,6 +1426,18 @@ function windowLoad() {
                     this.blockSize = 100;
                     this.src += "fountain.png";
                     break;
+                case "куст":
+                    this.blockSize = 100;
+                    this.src += "куст.png";
+                    break;
+                case "пень":
+                    this.blockSize = 100;
+                    this.src += "пень.png";
+                    break;
+                case "цветок":
+                    this.blockSize = 100;
+                    this.src += "цветок.png";
+                    break;
 
                 default:
                     break;
@@ -1620,95 +1639,604 @@ function windowLoad() {
             }
         },
         "3": {
-            "lives": 4,
-            "mapLenght": 150,
+            "lives": 5,
+            "mapLenght": 200,
             "platforms": {
                 "1": {
-                    "x": 10,
+                    "x": 15,
                     "y": 6,
                     "length": 10
-                }
+                },
+                "2": {
+                    "x": 15,
+                    "y": 5,
+                    "length": 10
+                },
+                "3": {
+                    "x": 15,
+                    "y": 4,
+                    "length": 10
+                },
+                "4": {
+                    "x": 15,
+                    "y": 3,
+                    "length": 10
+                },
+                "5": {
+                    "x": 15,
+                    "y": 2,
+                    "length": 10
+                },
+                "6": {
+                    "x": 30,
+                    "y": 11,
+                    "length": 10
+                },
+                "7": {
+                    "x": 43,
+                    "y": 6,
+                    "length": 5
+                },
+                "8": {
+                    "x": 59,
+                    "y": 2,
+                    "length": 10
+                },
+                "17": {
+                    "x": 82,
+                    "y": 6,
+                    "length": 7
+                },
+                "9": {
+                    "x": 93,
+                    "y": 11,
+                    "length": 7
+                },
+                "10": {
+                    "x": 103,
+                    "y": 7,
+                    "length": 5
+                },
+                "11": {
+                    "x": 59,
+                    "y": 2,
+                    "length": 9
+                },
+                "11": {
+                    "x": 116,
+                    "y": 6,
+                    "length": 10
+                },
+                "12": {
+                    "x": 130,
+                    "y": 3,
+                    "length": 3
+                },
+                "13": {
+                    "x": 138,
+                    "y": 8,
+                    "length": 5
+                },
+                "14": {
+                    "x": 148,
+                    "y": 13,
+                    "length": 10
+                },
+                "15": {
+                    "x": 163,
+                    "y": 18,
+                    "length": 15
+                },
+                "16": {
+                    "x": 147,
+                    "y": 5,
+                    "length": 8
+                },
             },
             "decors": {
                 "1": {
                     "name": "tree",
-                    "x": 10,
-                    "y": 10
+                    "x": 15,
+                    "y": 7
+                },
+                "8": {
+                    "name": "tree",
+                    "x": 152,
+                    "y": 14
                 },
                 "2": {
                     "name": "fountain",
+                    "x": 33,
+                    "y": 12
+                },
+                "6": {
+                    "name": "fountain",
+                    "x": 120,
+                    "y": 7
+                },
+                "3": {
+                    "name": "куст",
                     "x": 10,
-                    "y": 10
-                }
+                    "y": 2
+                },
+                "4": {
+                    "name": "пень",
+                    "x": 84,
+                    "y": 6.5
+                },
+                "5": {
+                    "name": "цветок",
+                    "x": 45,
+                    "y": 7
+                },
+                "5": {
+                    "name": "цветок",
+                    "x": 150,
+                    "y": 6
+                },
             },
             "buffs": {
                 "1": {
                     "name": "heart",
-                    "x": 10,
+                    "x": 73,
                     "y": 2
-                }
+                },
+                "2": {
+                    "name": "heart",
+                    "x": 167,
+                    "y": 2
+                },
             },
             "enemies": {
                 "1": {
-                    "x": 35,
+                    "x": 25,
                     "y": 2
-                }
+                },
+                "2": {
+                    "x": 50,
+                    "y": 2
+                },
+                "3": {
+                    "x": 59,
+                    "y": 3
+                },
+                "4": {
+                    "x": 100,
+                    "y": 2
+                },
+                "4": {
+                    "x": 116,
+                    "y": 7
+                },
+                "4": {
+                    "x": 148,
+                    "y": 14
+                },
             },
             "victoryLodge": {
-                "x": 10,
-                "y": 2
+                "x": 170,
+                "y": 19
             },
             "abysses": {
+                "1": {
+                    "x1": 35,
+                    "x2": 50
+                },
                 "2": {
-                    "x1": 25,
-                    "x2": 30
-                }
+                    "x1": 77,
+                    "x2": 100
+                },
+                "3": {
+                    "x1": 110,
+                    "x2": 160
+                },
             }
         },
         "4": {
-            "lives": 4,
-            "mapLenght": 50,
+            "lives": 3,
+            "mapLenght": 300,
             "platforms": {
                 "1": {
-                    "x": 10,
-                    "y": 6,
+                    "x": 3,
+                    "y": 1,
                     "length": 10
-                }
+                },
+                "2": {
+                    "x": 15,
+                    "y": 5,
+                    "length": 12
+                },
+                "3": {
+                    "x": 30,
+                    "y": 9,
+                    "length": 3
+                },
+                "4": {
+                    "x": 35,
+                    "y": 13,
+                    "length": 3
+                },
+                "5": {
+                    "x": 39,
+                    "y": 2,
+                    "length": 7
+                },
+                "6": {
+                    "x": 39,
+                    "y": 3,
+                    "length": 7
+                },
+                "7": {
+                    "x": 39,
+                    "y": 3,
+                    "length": 7
+                },
+                "8": {
+                    "x": 39,
+                    "y": 4,
+                    "length": 7
+                },
+                "9": {
+                    "x": 39,
+                    "y": 5,
+                    "length": 7
+                },
+                "10": {
+                    "x": 66,
+                    "y": 1,
+                    "length": 7
+                },
+                "11": {
+                    "x": 105,
+                    "y": 5,
+                    "length": 6
+                },
+
+                "12": {
+                    "x": 113,
+                    "y": 8,
+                    "length": 5
+                },
+                "13": {
+                    "x": 121,
+                    "y": 11,
+                    "length": 4
+                },
+                "14": {
+                    "x": 127,
+                    "y": 14,
+                    "length": 3
+                },
+                "15": {
+                    "x": 131,
+                    "y": 18,
+                    "length": 2
+                },
+                "16": {
+                    "x": 135,
+                    "y": 20,
+                    "length": 2
+                },
+                "17": {
+                    "x": 135,
+                    "y": 1,
+                    "length": 2
+                },
+
+                "18": {
+                    "x": 164,
+                    "y": 5,
+                    "length": 15
+                },
+
+                "19": {
+                    "x": 182,
+                    "y": 8,
+                    "length": 2
+                },
+                "20": {
+                    "x": 186,
+                    "y": 3,
+                    "length": 3
+                },
+
+                "21": {
+                    "x": 194,
+                    "y": 4,
+                    "length": 2
+                },
+                
+                
             },
             "decors": {
                 "1": {
                     "name": "tree",
                     "x": 10,
-                    "y": 10
+                    "y": 2
+                },
+                "27": {
+                    "name": "tree",
+                    "x": 113,
+                    "y": 9
+                },
+                "17": {
+                    "name": "tree",
+                    "x": 57,
+                    "y": 2
                 },
                 "2": {
+                    "name": "tree",
+                    "x": 2,
+                    "y": 2
+                },
+                "14": {
+                    "name": "tree",
+                    "x": 34,
+                    "y": 14
+                },
+                "40": {
+                    "name": "tree",
+                    "x": 166,
+                    "y": 6
+                },
+                "41": {
+                    "name": "цветок",
+                    "x": 170,
+                    "y": 6
+                },
+                "42": {
+                    "name": "пень",
+                    "x": 174,
+                    "y": 5.5
+                },
+                "43": {
+                    "name": "цветок",
+                    "x": 181.5,
+                    "y": 9
+                },
+                 "44": {
+                    "name": "цветок",
+                    "x": 186,
+                    "y": 4
+                },
+                "45": {
+                    "name": "пень",
+                    "x": 200.5,
+                    "y": 1.5
+                },
+                "22": {
+                    "name": "tree",
+                    "x": 86,
+                    "y": 2
+                },
+                "31": {
+                    "name": "куст",
+                    "x": 127,
+                    "y": 15
+                },
+                "32": {
+                    "name": "цветок",
+                    "x": 130,
+                    "y": 19
+                },
+                "36": {
+                    "name": "цветок",
+                    "x": 140,
+                    "y": 2
+                },
+
+                "35": {
                     "name": "fountain",
-                    "x": 10,
+                    "x":50,
+                    "y": 2
+                },
+                "20": {
+                    "name": "fountain",
+                    "x":80,
+                    "y": 2
+                },
+                "34": {
+                    "name": "fountain",
+                    "x":143,
+                    "y": 2
+                },
+                "4": {
+                    "name": "куст",
+                    "x": 7,
+                    "y": 2
+                },
+                "37": {
+                    "name": "куст",
+                    "x": 156,
+                    "y": 2
+                },
+                "7": {
+                    "name": "куст",
+                    "x": 32.5,
+                    "y": 2
+                },
+                "10": {
+                    "name": "куст",
+                    "x": 22,
+                    "y": 6
+                },
+                "18": {
+                    "name": "куст",
+                    "x": 70,
+                    "y": 2
+                },
+                "25": {
+                    "name": "куст",
+                    "x": 105,
+                    "y": 6
+                },
+                "5": {
+                    "name": "пень",
+                    "x": 42,
+                    "y": 5.5
+                },
+                "11": {
+                    "name": "пень",
+                    "x": 18,
+                    "y": 5.5
+                },
+                "21": {
+                    "name": "пень",
+                    "x":95 ,
+                    "y": 1.5
+                },
+                "33": {
+                    "name": "пень",
+                    "x":150 ,
+                    "y": 1.5
+                },
+                "6": {
+                    "name": "цветок",
+                    "x": 38,
+                    "y": 6
+                },
+                "29": {
+                    "name": "цветок",
+                    "x": 120,
+                    "y": 12
+                },
+                "30": {
+                    "name": "цветок",
+                    "x": 123,
+                    "y": 12
+                },
+                "38": {
+                    "name": "цветок",
+                    "x": 147,
+                    "y": 2
+                },
+                "39": {
+                    "name": "цветок",
+                    "x": 153,
+                    "y": 2
+                },
+                "23": {
+                    "name": "цветок",
+                    "x": 84,
+                    "y": 2
+                },
+                "24": {
+                    "name": "цветок",
+                    "x": 90,
+                    "y": 2
+                },
+                 "26": {
+                    "name": "цветок",
+                    "x": 108   ,
+                    "y": 6
+                },
+                
+                "19": {
+                    "name": "цветок",
+                    "x": 66,
+                    "y": 2
+                },
+                "8": {
+                    "name": "цветок",
+                    "x": 30,
+                    "y": 2
+                },
+                "9": {
+                    "name": "цветок",
+                    "x": 36,
+                    "y": 2
+                },
+                "12": {
+                    "name": "цветок",
+                    "x": 15,
+                    "y": 6
+                }, 
+                "13": {
+                    "name": "цветок",
+                    "x": 30,
                     "y": 10
-                }
+                },
+                "16": {
+                    "name": "цветок",
+                    "x": 47     ,
+                    "y": 2
+                },
             },
             "buffs": {
-                "1": {
+                "2": {
                     "name": "heart",
-                    "x": 10,
+                    "x": 33,
+                    "y": 2
+                },
+                "3": {
+                    "name": "heart",
+                    "x": 134.5,
                     "y": 2
                 }
             },
             "enemies": {
                 "1": {
-                    "x": 35,
-                    "y": 2
-                }
+                    "x": 15,
+                    "y": 6
+                },
+                "2": {
+                    "x": 30,
+                    "y": 2 
+                },
+                "3": {
+                    "x": 47,
+                    "y": 2 
+                },
+                "4": {
+                    "x": 65,
+                    "y": 2 
+                },
+                "5": {
+                    "x": 79,
+                    "y": 2 
+                },
+                "6": {
+                    "x": 88,
+                    "y": 2 
+                },
+                "7": {
+                    "x": 141,
+                    "y": 2 
+                },
+                "8": {
+                    "x": 149,
+                    "y": 2 
+                },
+                "9": {
+                    "x": 166,
+                    "y": 6
+                },
             },
             "victoryLodge": {
-                "x": 10,
+                "x": 202,
                 "y": 2
             },
             "abysses": {
                 "2": {
-                    "x1": 25,
+                    "x1": 1,
                     "x2": 30
-                }
+                },
+                "3": {
+                    "x1": 60,
+                    "x2": 77
+                },
+                "4": {
+                    "x1": 99,
+                    "x2": 140   
+                },
+                "5": {
+                    "x1": 160,
+                    "x2": 200
+                },
+                "6": {
+                    "x1": 210,
+                    "x2": 250
+                },
             }
         },
         "5": {
@@ -1784,8 +2312,8 @@ function windowLoad() {
         definitionOfDecoration() {
             switch (this.nameBuff) {
                 case "heart":
-                    this.blockSize = 45;
-                    this.src += "heart.png";
+                    this.blockSize = 60;
+                    this.src += "рыба.png";
                     this.text = "+1";
                     break;
                 /* case "fountain":
@@ -1836,7 +2364,7 @@ function windowLoad() {
             clearInterval(this.checkCollideTimer);
 
             this.showText();
-            
+
             if (this.nameBuff === "heart") {
                 addHeart();
             }
@@ -1851,7 +2379,7 @@ function windowLoad() {
                 text-shadow: 1px 1px 2px #000;
                 position: absolute;
                 animation: showHurt 1s ease;
-                left: ${Number.parseInt(this.decor.style.left) - 32 * 7}px;
+                left: ${Number.parseInt(this.decor.style.left)}px;
                 bottom: ${Number.parseInt(this.decor.style.bottom + 32)}px;
             `;
             game.appendChild(element);
@@ -1870,8 +2398,16 @@ function windowLoad() {
 
                 const level = levels[levelNum];
 
+                //вывод уровня в попапе
+                const elemsNumLevel = document.querySelectorAll("#NumLevel");
+                if (elemsNumLevel.length) {
+                    elemsNumLevel.forEach(elem => {
+                        elem.innerText = levelNum;
+                    });
+                }
+
                 //жизни
-                lives = level.lives;
+                lives = level.lives;    
                 maxLives = lives;
                 for (let index = 0.5; index < lives + 0.5; index++) {
                     hearts.generateHearts(index, 0.5);
