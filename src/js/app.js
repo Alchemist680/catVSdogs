@@ -904,7 +904,7 @@ function windowLoad() {
             `;
             game.appendChild(this.block);
             this.img = document.createElement("img");
-            this.img.src = "img/characters/enemies/StandDog.svg";
+            this.img.src = "img/characters/standDog.svg";
             this.img.style.cssText = `
                 position: absolute;
                 left: 0;
